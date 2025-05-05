@@ -230,11 +230,14 @@ const analyzeSingleHand = (
     // Standard format
     if (typeof kp.x === 'number' && !isNaN(kp.x)) {
       // Check if coordinates are normalized (between 0-1) or absolute
-      x = kp.x > 1 ? kp.x : kp.x * videoW;
+      const normalizedX = kp.x > 1 ? kp.x / videoW : kp.x;
+      // Mirror the x-coordinate (1 - x) since the video is mirrored with CSS
+      x = (1 - normalizedX) * videoW;
     }
     // Alternative format (x3D)
     else if (typeof kp.x3D === 'number' && !isNaN(kp.x3D)) {
-      x = kp.x3D * videoW;
+      // Mirror the x-coordinate (1 - x) since the video is mirrored with CSS
+      x = (1 - kp.x3D) * videoW;
     }
 
     if (typeof kp.y === 'number' && !isNaN(kp.y)) {
@@ -257,7 +260,8 @@ const analyzeSingleHand = (
       if (Array.isArray(kp) && kp.length >= 2) {
         // Format might be [x, y, z] array
         if (typeof kp[0] === 'number' && !isNaN(kp[0])) {
-          x = kp[0] * videoW; // Assume normalized
+          // Mirror the x-coordinate (1 - x) since the video is mirrored with CSS
+          x = (1 - kp[0]) * videoW; // Assume normalized
         }
         if (typeof kp[1] === 'number' && !isNaN(kp[1])) {
           y = kp[1] * videoH; // Assume normalized
@@ -271,7 +275,9 @@ const analyzeSingleHand = (
     // If we have an array format instead of object properties
     if (x === null && y === null && Array.isArray(kp) && kp.length >= 2) {
       if (typeof kp[0] === 'number' && !isNaN(kp[0])) {
-        x = kp[0] > 1 ? kp[0] : kp[0] * videoW;
+        const normalizedX = kp[0] > 1 ? kp[0] / videoW : kp[0];
+        // Mirror the x-coordinate (1 - x) since the video is mirrored with CSS
+        x = (1 - normalizedX) * videoW;
       }
       if (typeof kp[1] === 'number' && !isNaN(kp[1])) {
         y = kp[1] > 1 ? kp[1] : kp[1] * videoH;
@@ -287,7 +293,9 @@ const analyzeSingleHand = (
         const value = kp[key];
         if (typeof value === 'object' && value !== null) {
           if (typeof value.x === 'number' && !isNaN(value.x)) {
-            x = value.x > 1 ? value.x : value.x * videoW;
+            const normalizedX = value.x > 1 ? value.x / videoW : value.x;
+            // Mirror the x-coordinate (1 - x) since the video is mirrored with CSS
+            x = (1 - normalizedX) * videoW;
           }
           if (typeof value.y === 'number' && !isNaN(value.y)) {
             y = value.y > 1 ? value.y : value.y * videoH;
