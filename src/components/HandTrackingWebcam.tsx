@@ -1,11 +1,9 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { HandDetector } from './HandDetector';
 import { HandLandmarkRenderer } from './HandLandmarkRenderer';
-import { detectHand, HandDetection } from '@/utils/handTracking';
+import { HandDetection } from '@/utils/handTracking';
 import { useApp } from '@/contexts/AppContext';
-import { toast } from '@/components/ui/use-toast';
 import { useDrawing } from '@/contexts/DrawingContext';
-import Webcam from './Webcam';
 
 interface HandTrackingWebcamProps {
   onHandGesture: (

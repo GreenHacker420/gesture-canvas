@@ -17,7 +17,8 @@ export const HandDetector: React.FC<HandDetectorProps> = ({
   const [isInitialized, setIsInitialized] = useState(false);
   const [isDetecting, setIsDetecting] = useState(false);
   const [retryCount, setRetryCount] = useState(0);
-  const [isEraserActive, setIsEraserActive] = useState(false);
+  // Using setIsEraserActive but not isEraserActive directly
+  const [, setIsEraserActive] = useState(false);
   const [confidence, setConfidence] = useState(0);
   const requestRef = useRef<number>();
   const { setIsEraser } = useDrawing();

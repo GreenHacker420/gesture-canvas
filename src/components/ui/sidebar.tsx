@@ -545,7 +545,8 @@ const SidebarMenuButton = React.forwardRef<
     ref
   ) => {
     const Comp = asChild ? Slot : "button"
-    const { isMobile, state } = useSidebar()
+    // Using useSidebar hook but not using its return values
+    useSidebar()
 
     const button = (
       <Comp

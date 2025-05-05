@@ -8,14 +8,15 @@ interface WebcamProps {
   onStreamReady: (video: HTMLVideoElement, isActive: boolean) => void;
 }
 
-const Webcam: React.FC<WebcamProps> = ({ 
-  width = 640, 
+const Webcam: React.FC<WebcamProps> = ({
+  width = 640,
   height = 480,
   onStreamReady
 }) => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [isStreamActive, setIsStreamActive] = useState(false);
+  // Using setIsStreamActive but not isStreamActive directly
+  const [, setIsStreamActive] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   // Initialize webcam
@@ -45,33 +46,33 @@ const Webcam: React.FC<WebcamProps> = ({
             frameRate: { ideal: 30, min: 15 }
           }
         };
-        
+
         console.log('Requesting camera with constraints:', JSON.stringify(constraints));
-        
+
         const stream = await navigator.mediaDevices.getUserMedia(constraints);
-        
+
         if (videoRef.current) {
           console.log('Camera access granted, setting up video element');
-          
+
           // Log the actual constraints we got
           const videoTrack = stream.getVideoTracks()[0];
           if (videoTrack) {
             const settings = videoTrack.getSettings();
             console.log('Camera settings:', settings);
           }
-          
+
           videoRef.current.srcObject = stream;
           setIsStreamActive(true);
-          
+
           // Explicitly set this for cross-browser support
           videoRef.current.playsInline = true;
           videoRef.current.muted = true;
-          
+
           // Notify parent when video is loaded
           videoRef.current.onloadeddata = () => {
             if (videoRef.current) {
               console.log(`Video ready: ${videoRef.current.videoWidth}x${videoRef.current.videoHeight}`);
-              
+
               if (videoRef.current.videoWidth === 0 || videoRef.current.videoHeight === 0) {
                 console.warn('Video has zero dimensions after loading data');
                 setTimeout(() => {
@@ -91,7 +92,7 @@ const Webcam: React.FC<WebcamProps> = ({
               }
             }
           };
-          
+
           // Ensure video plays
           videoRef.current.play().catch(e => {
             console.error('Error playing video:', e);
@@ -100,9 +101,9 @@ const Webcam: React.FC<WebcamProps> = ({
         }
       } catch (error: any) {
         console.error('Error accessing webcam:', error);
-        
+
         let message = "Please allow camera access to use hand tracking features";
-        
+
         // More helpful error messages based on the actual error
         if (error.name === 'NotAllowedError' || error.name === 'PermissionDeniedError') {
           message = "Camera access was denied. Please allow camera access and reload the page.";
@@ -111,14 +112,14 @@ const Webcam: React.FC<WebcamProps> = ({
         } else if (error.name === 'NotReadableError' || error.name === 'TrackStartError') {
           message = "Your camera is being used by another application. Please close other apps using the camera.";
         }
-        
+
         setErrorMessage(message);
         toast({
           title: "Webcam access issue",
           description: message,
           variant: "destructive"
         });
-        
+
         setIsLoading(false);
         onStreamReady(null as any, false);
       }
@@ -146,13 +147,13 @@ const Webcam: React.FC<WebcamProps> = ({
           </div>
         </div>
       )}
-      
+
       {errorMessage && (
         <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-75 z-20 p-4">
           <div className="bg-red-900 text-white p-4 rounded-lg max-w-md text-center">
             <p className="font-bold mb-2">Camera Error</p>
             <p>{errorMessage}</p>
-            <button 
+            <button
               className="mt-4 bg-red-700 hover:bg-red-600 text-white px-4 py-2 rounded-md"
               onClick={() => window.location.reload()}
             >
@@ -161,14 +162,14 @@ const Webcam: React.FC<WebcamProps> = ({
           </div>
         </div>
       )}
-      
-      <video 
+
+      <video
         ref={videoRef}
-        autoPlay 
-        playsInline 
+        autoPlay
+        playsInline
         muted
         className="w-full h-full object-cover rounded-lg mirror-mode"
-        style={{ 
+        style={{
           transform: 'scaleX(-1)',  // Mirror webcam
           opacity: isLoading || errorMessage ? 0.5 : 1,
           display: errorMessage ? 'none' : 'block'

@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Progress } from "@/components/ui/progress";
 import HandTrackingWebcam from '@/components/HandTrackingWebcam';
 import { Button } from '@/components/ui/button';
 import { ArrowLeftRight } from 'lucide-react';
@@ -21,7 +20,7 @@ interface CameraPanelProps {
 const CameraPanel: React.FC<CameraPanelProps> = ({
   onSwapPanels,
   onHandGesture,
-  confidence
+  // confidence is used in the props interface but not in the component
 }) => {
   const [isCollapsed, setIsCollapsed] = useState(false);
 

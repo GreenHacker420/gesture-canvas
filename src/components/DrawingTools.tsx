@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { Card } from "@/components/ui/card";
 import { Slider } from "@/components/ui/slider";
 import { Button } from "@/components/ui/button";
-import { Download, Undo, Redo, Eraser, Image as ImageIcon, Brush, Trash2, Camera, Upload, FileImage } from 'lucide-react';
+import { Download, Undo, Redo, Image as ImageIcon, Trash2, Camera, Upload, FileImage } from 'lucide-react';
 import { useDrawing } from '@/contexts/DrawingContext';
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { Switch } from "@/components/ui/switch";
@@ -11,7 +11,7 @@ import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { Separator } from "@/components/ui/separator";
+
 
 interface DrawingToolsProps {
   onDownload: () => void;

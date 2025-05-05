@@ -9,7 +9,7 @@ interface GestureHandlerProps {
     position: { x: number, y: number } | null,
     clearCanvas: boolean,
     changeColor: boolean,
-    maxConfidence: number,
+    maxConfidence?: number, // Make this parameter optional
     additionalPositions?: { x: number, y: number }[]
   ) => void }) => React.ReactNode;
 }
@@ -51,7 +51,7 @@ const GestureHandler: React.FC<GestureHandlerProps> = ({ children }) => {
     position: { x: number, y: number } | null,
     gestureClearCanvas: boolean,
     gestureChangeColor: boolean,
-    maxConfidence: number,
+    _maxConfidence?: number, // Optional parameter (unused)
     additionalPositions?: { x: number, y: number }[]
   ) => {
     // Debug logging for drawing state

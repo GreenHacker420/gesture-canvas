@@ -1,7 +1,7 @@
 
 import * as React from 'react';
 import { toast } from '@/components/ui/use-toast';
-import { resizeCanvasToFitContainer, drawImageOnCanvas } from '@/utils/imageUtils';
+import { drawImageOnCanvas } from '@/utils/imageUtils';
 import { Color } from '@/utils/colorUtils';
 
 interface MultiHandDrawingCanvasProps {
@@ -50,8 +50,8 @@ const MultiHandDrawingCanvas: React.FC<MultiHandDrawingCanvasProps> = ({
     const updateCanvasSize = () => {
       if (!containerRef.current) return;
 
-      const container = containerRef.current;
-      const rect = container.getBoundingClientRect();
+      // Get container reference (not used directly but needed for context)
+      containerRef.current;
 
       // Use fixed dimensions with 16:9 aspect ratio for consistency
       const fixedWidth = 640;
@@ -213,10 +213,6 @@ const MultiHandDrawingCanvas: React.FC<MultiHandDrawingCanvasProps> = ({
         // Calculate the scaling factors between the video (640x360) and the canvas
         const videoWidth = 640;
         const videoHeight = 360;
-
-        // Calculate the scale factors between video and canvas
-        const scaleX = canvas.width / videoWidth;
-        const scaleY = canvas.height / videoHeight;
 
         // Calculate the position within the canvas based on the position in the video
         // First normalize the position to 0-1 range within the video dimensions

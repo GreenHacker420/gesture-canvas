@@ -22,7 +22,6 @@ const CanvasPanel: React.FC<CanvasPanelProps> = ({
   onFullscreenToggle,
   isFullscreen = false
 }) => {
-  const canvasRef = React.useRef<HTMLCanvasElement>(null);
   const {
     drawingPosition,
     clearCanvas,
@@ -33,9 +32,9 @@ const CanvasPanel: React.FC<CanvasPanelProps> = ({
     backgroundImage,
     setBackgroundImage,
     backgroundOpacity,
-    strokeHistory,
-    currentStrokeIndex,
-    addStroke,
+    // strokeHistory,
+    // currentStrokeIndex,
+    // addStroke,
     undo,
     redo,
     canUndo,
@@ -80,8 +79,8 @@ const CanvasPanel: React.FC<CanvasPanelProps> = ({
     }
 
     try {
-      // Load the image
-      const img = await loadImageFromFile(file);
+      // Load the image (not using the returned image directly)
+      await loadImageFromFile(file);
 
       // Set the background image
       const imageUrl = URL.createObjectURL(file);

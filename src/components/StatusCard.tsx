@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { useDrawing } from '@/contexts/DrawingContext';
-import { CirclePercent, Check } from 'lucide-react';
+import { CirclePercent } from 'lucide-react';
 
 const StatusCard = () => {
   const { brushColor, brushSize, isEraser } = useDrawing();
