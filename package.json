@@ -13,7 +13,7 @@
     "build:dev": "npm run copy-mediapipe && vite build --mode development && npm run post-build",
     "build:github": "tsc && npm run copy-mediapipe && vite build && npm run post-build",
     "predeploy": "npm run build:github",
-    "deploy": "gh-pages -d dist",
+    "deploy": "gh-pages -d dist --clean",
     "lint": "eslint src --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview"
   },
