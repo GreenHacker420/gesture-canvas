@@ -201,6 +201,12 @@ const Index = () => {
                 If hand tracking is unavailable, you can still draw with mouse or touch.
               </p>
 
+              <div className="text-center text-xs text-amber-600 bg-amber-50 border border-amber-200 rounded-md p-3 mt-4 max-w-2xl mx-auto">
+                <strong>Privacy Notice:</strong> This application uses your device's camera for hand tracking.
+                All processing happens directly in your browser - no video data is sent to any server or stored.
+                Your camera feed is only used for real-time hand gesture detection to control the drawing canvas.
+              </div>
+
               <p className="text-center text-xs text-gray-400 mt-4">
                 Created by GreenHacker
               </p>
