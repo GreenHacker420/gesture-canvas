@@ -4,6 +4,7 @@ import path from "path";
 import viteCompression from 'vite-plugin-compression';
 
 export default defineConfig({
+  base: '/gesture-canvas/', // Base path for GitHub Pages
   server: {
     host: "::",
     port: 8080,

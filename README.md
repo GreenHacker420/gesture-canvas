@@ -63,6 +63,31 @@ This project is built with:
 - shadcn-ui
 - Tailwind CSS
 
+## Deployment
+
+This project is deployed on GitHub Pages. You can access the live version at:
+https://greenhacker420.github.io/gesture-canvas/
+
+### How to deploy
+
+To deploy the application to GitHub Pages, you can use one of the following methods:
+
+#### Automatic Deployment (GitHub Actions)
+
+The project is configured to automatically deploy to GitHub Pages when changes are pushed to the main branch. The GitHub Actions workflow handles the build and deployment process.
+
+#### Manual Deployment
+
+You can also manually deploy the application using the following commands:
+
+```sh
+# Build the project for GitHub Pages
+npm run build:github
+
+# Deploy to GitHub Pages
+npm run deploy
+```
+
 ## Credits
 
 Created by GreenHacker
