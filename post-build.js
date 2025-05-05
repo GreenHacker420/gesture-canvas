@@ -29,27 +29,27 @@ async function findGzFiles(dir) {
 async function fixGzPaths() {
   try {
     console.log('Fixing compressed file paths...');
-    
+
     // Find all .gz files
     const gzFiles = await findGzFiles(distDir);
-    
+
     for (const filePath of gzFiles) {
       // Check if the file path contains the absolute path
-      if (filePath.includes('/Users/greenhacker/Desktop/hand/gesture-canvas-art-stream')) {
+      if (filePath.includes('/Users/greenhacker/Desktop/Working/gesture-canvas-art-stream-cef201c5063320596cadbce842d1212064f9ab59')) {
         // Get the correct path relative to the dist directory
         const relativePath = filePath.replace(distDir, '');
-        const correctPath = path.join(distDir, relativePath.split('/Users/greenhacker/Desktop/hand/gesture-canvas-art-stream').pop());
-        
+        const correctPath = path.join(distDir, relativePath.split('/Users/greenhacker/Desktop/Working/gesture-canvas-art-stream-cef201c5063320596cadbce842d1212064f9ab59').pop());
+
         // Create the directory if it doesn't exist
         const dirName = path.dirname(correctPath);
         await fs.mkdir(dirName, { recursive: true });
-        
+
         // Move the file to the correct location
         await fs.rename(filePath, correctPath);
         console.log(`Fixed: ${path.relative(distDir, correctPath)}`);
       }
     }
-    
+
     console.log('All compressed files fixed successfully!');
   } catch (error) {
     console.error('Error fixing compressed files:', error);

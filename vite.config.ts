@@ -3,8 +3,22 @@ import react from "@vitejs/plugin-react-swc";
 import path from "path";
 import viteCompression from 'vite-plugin-compression';
 
+// Determine the base path based on the environment
+const getBasePath = () => {
+  // Check if we're in Vercel production environment
+  if (process.env.VERCEL_ENV === 'production') {
+    return '/'; // Use root path for Vercel
+  }
+  // Check if we're in Netlify environment
+  if (process.env.NETLIFY === 'true') {
+    return '/'; // Use root path for Netlify
+  }
+  // Default to GitHub Pages path
+  return '/gesture-canvas/';
+};
+
 export default defineConfig({
-  base: '/gesture-canvas/', // Base path for GitHub Pages
+  base: getBasePath(), // Dynamic base path
   server: {
     host: "::",
     port: 8080,
