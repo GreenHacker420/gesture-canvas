@@ -3,6 +3,7 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
+  "homepage": "https://greenhacker420.github.io/gesture-canvas/",
   "scripts": {
     "copy-mediapipe": "node copy-mediapipe.js",
     "post-build": "node post-build.js",
@@ -11,9 +12,9 @@
     "build": "tsc && npm run copy-mediapipe && vite build && npm run post-build",
     "build:netlify": "tsc && npm run copy-mediapipe && vite build && npm run netlify-post-build",
     "build:dev": "npm run copy-mediapipe && vite build --mode development && npm run post-build",
-    "build:github": "tsc && npm run copy-mediapipe && vite build && npm run post-build",
+    "build:github": "tsc && npm run copy-mediapipe && vite build && npm run post-build && touch dist/.nojekyll",
     "predeploy": "npm run build:github",
-    "deploy": "gh-pages -d dist",
+    "deploy": "gh-pages --dist dist --dotfiles --branch gh-pages",
     "lint": "eslint src --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview"
   },
