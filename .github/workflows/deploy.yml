@@ -27,9 +27,13 @@ jobs:
       - name: Build 🔧
         run: npm run build:github
 
+      - name: Create .nojekyll file
+        run: touch dist/.nojekyll
+
       - name: Deploy 🚀
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./dist
           force_orphan: true  # Use a clean publish branch
+          cname: # Leave empty, no custom domain
