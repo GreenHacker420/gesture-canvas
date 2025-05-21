@@ -53,13 +53,9 @@ The application is designed to be deployed on multiple platforms:
 
 The primary deployment platform, offering free hosting for the application. The deployment is configured through GitHub Actions for automatic updates whenever changes are pushed to the main branch.
 
-### Vercel
-
-Offers improved performance through its global CDN and edge functions. The application includes specific configurations for Vercel to handle WebAssembly files and CORS settings properly.
-
 ### Netlify
 
-Provides another reliable hosting option with continuous deployment. The application includes a custom Netlify plugin to handle MediaPipe dependencies correctly.
+Provides a reliable hosting option with continuous deployment. The application includes a custom Netlify plugin to handle MediaPipe dependencies correctly.
 
 ## Browser Compatibility
 

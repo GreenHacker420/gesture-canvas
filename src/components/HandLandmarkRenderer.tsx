@@ -11,38 +11,82 @@ export const HandLandmarkRenderer: React.FC<HandLandmarkRendererProps> = ({
   detection
 }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
 
-  // Store fixed dimensions to maintain consistency
+  // Store dimensions to maintain consistency
   const [canvasDimensions, setCanvasDimensions] = useState({ width: 640, height: 360 });
 
-  // Set canvas dimensions once when video is loaded
+  // Track the actual display dimensions for scaling
+  const [displayDimensions, setDisplayDimensions] = useState({ width: 0, height: 0 });
+
+  // Update canvas dimensions when video dimensions change
   useEffect(() => {
-    if (!videoElement || !videoElement.videoWidth || !videoElement.videoHeight) return;
+    if (!videoElement) return;
 
-    // Only update dimensions if they've changed significantly
-    if (Math.abs(videoElement.videoWidth - canvasDimensions.width) > 10 ||
-        Math.abs(videoElement.videoHeight - canvasDimensions.height) > 10) {
+    // Wait for video dimensions to be available
+    const checkVideoDimensions = () => {
+      if (videoElement.videoWidth && videoElement.videoHeight) {
+        // Always use the actual video dimensions for the internal canvas size
+        console.log(`Updating canvas dimensions to match video: ${videoElement.videoWidth}x${videoElement.videoHeight}`);
+        setCanvasDimensions({
+          width: videoElement.videoWidth,
+          height: videoElement.videoHeight
+        });
+      } else {
+        // If dimensions aren't available yet, check again in a moment
+        setTimeout(checkVideoDimensions, 100);
+      }
+    };
 
-      console.log(`Updating canvas dimensions to match video: ${videoElement.videoWidth}x${videoElement.videoHeight}`);
-      setCanvasDimensions({
-        width: videoElement.videoWidth,
-        height: videoElement.videoHeight
-      });
-    }
-  }, [videoElement, videoElement?.videoWidth, videoElement?.videoHeight]);
+    checkVideoDimensions();
+  }, [videoElement]);
+
+  // Track the container size for proper scaling
+  useEffect(() => {
+    if (!containerRef.current) return;
+
+    const updateDisplayDimensions = () => {
+      if (containerRef.current) {
+        const rect = containerRef.current.getBoundingClientRect();
+        setDisplayDimensions({
+          width: rect.width,
+          height: rect.height
+        });
+        console.log(`Display dimensions updated: ${rect.width}x${rect.height}`);
+      }
+    };
+
+    // Initial update
+    updateDisplayDimensions();
+
+    // Set up resize observer to track container size changes
+    const resizeObserver = new ResizeObserver(updateDisplayDimensions);
+    resizeObserver.observe(containerRef.current);
+
+    return () => {
+      if (containerRef.current) {
+        resizeObserver.unobserve(containerRef.current);
+      }
+      resizeObserver.disconnect();
+    };
+  }, []);
 
   useEffect(() => {
-    if (!canvasRef.current) return;
+    if (!canvasRef.current || !videoElement) return;
 
     const canvas = canvasRef.current;
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    // Set canvas dimensions to our stored fixed dimensions
-    canvas.width = canvasDimensions.width;
-    canvas.height = canvasDimensions.height;
+    // Always use the actual video dimensions for the internal canvas size
+    const videoWidth = videoElement.videoWidth || 640;
+    const videoHeight = videoElement.videoHeight || 360;
 
-    console.log(`Canvas dimensions set to: ${canvas.width}x${canvas.height}`);
+    // Set canvas dimensions to match the video's internal dimensions
+    canvas.width = videoWidth;
+    canvas.height = videoHeight;
+
+    console.log(`Canvas dimensions set to: ${canvas.width}x${canvas.height} (video: ${videoWidth}x${videoHeight})`);
 
     // Clear canvas
     ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -55,6 +99,14 @@ export const HandLandmarkRenderer: React.FC<HandLandmarkRendererProps> = ({
         handsCount: detection.hands.length,
         handsWithLandmarks: detection.hands.filter(h => h.landmarks && h.landmarks.length === 21).length
       });
+
+      // Save the current transformation matrix
+      ctx.save();
+
+      // Apply transformations to match the video display
+      // First translate to center, then scale (mirror), then translate back
+      ctx.translate(canvas.width, 0);
+      ctx.scale(-1, 1);
 
       // Draw landmarks for each hand
       detection.hands.forEach((hand, index) => {
@@ -85,7 +137,8 @@ export const HandLandmarkRenderer: React.FC<HandLandmarkRendererProps> = ({
             drawHandLandmarks(ctx, validLandmarks, {
               color: hand.handedness === 'Right' ? 'lime' : 'yellow',
               radius: 6,
-              showLabels: true // Show labels for all landmarks
+              showLabels: true, // Show labels for all landmarks
+              mirrorX: true // The canvas is already mirrored, so don't mirror the points again
             });
 
             // Draw index finger position with special highlight
@@ -120,25 +173,38 @@ export const HandLandmarkRenderer: React.FC<HandLandmarkRendererProps> = ({
           console.warn(`Hand ${index} missing valid landmarks array`);
         }
       });
+
+      // Restore the original transformation matrix
+      ctx.restore();
     }
   }, [detection, videoElement, canvasDimensions]);
 
   return (
-    <canvas
-      ref={canvasRef}
-      width={canvasDimensions.width}
-      height={canvasDimensions.height}
-      className="absolute top-0 left-0"
+    <div
+      ref={containerRef}
+      className="absolute top-0 left-0 w-full h-full"
       style={{
         pointerEvents: 'none',
         zIndex: 1000,
-        transform: 'scaleX(-1)', // Mirror the canvas to match video
-        opacity: detection?.isHandDetected ? 1 : 0,
-        transition: 'opacity 0.3s ease-in-out',
-        width: '100%',
-        height: '100%',
-        objectFit: 'cover',
       }}
-    />
+    >
+      <canvas
+        ref={canvasRef}
+        width={canvasDimensions.width}
+        height={canvasDimensions.height}
+        style={{
+          pointerEvents: 'none',
+          // We're handling mirroring in the drawing code now, not with CSS
+          opacity: detection?.isHandDetected ? 1 : 0,
+          transition: 'opacity 0.3s ease-in-out',
+          width: '100%',
+          height: '100%',
+          objectFit: 'cover', // Use cover to match video dimensions
+          position: 'absolute',
+          top: 0,
+          left: 0,
+        }}
+      />
+    </div>
   );
 };

@@ -101,36 +101,7 @@ npm run build:github
 npm run deploy
 ```
 
-### Vercel
 
-The project can also be deployed on Vercel for improved performance and reliability.
-
-#### Automatic Deployment
-
-1. Connect your GitHub repository to Vercel
-2. Vercel will automatically detect the project as a Vite project
-3. Set the build command to `npm run build:vercel`
-4. Set the output directory to `dist`
-
-The project includes a `vercel.json` configuration file that sets up:
-- Proper headers for WASM files
-- Cache control for assets
-- CORS settings for MediaPipe
-
-#### Manual Deployment
-
-You can manually deploy the application to Vercel using the following commands:
-
-```sh
-# Install Vercel CLI
-npm install -g vercel
-
-# Login to Vercel
-vercel login
-
-# Deploy to Vercel
-vercel --prod
-```
 
 ### Netlify
 

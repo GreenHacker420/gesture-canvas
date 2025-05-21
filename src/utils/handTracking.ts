@@ -49,7 +49,7 @@ export const initializeHandTracking = async (): Promise<handPoseDetection.HandDe
 export const drawHandLandmarks = (
   ctx: CanvasRenderingContext2D,
   landmarks: { x: number; y: number; z?: number; name?: string }[],
-  options: { color?: string; radius?: number; showLabels?: boolean } = {}
+  options: { color?: string; radius?: number; showLabels?: boolean; mirrorX?: boolean } = {}
 ) => {
   // Validate landmarks before drawing
   if (!landmarks || !Array.isArray(landmarks) || landmarks.length === 0) {
@@ -68,14 +68,38 @@ export const drawHandLandmarks = (
     return;
   }
 
+  // Get canvas dimensions for scaling
+  const canvasWidth = ctx.canvas.width;
+  const canvasHeight = ctx.canvas.height;
+
+  // Log canvas dimensions for debugging
+  console.log(`Drawing landmarks on canvas: ${canvasWidth}x${canvasHeight}`);
+
   const color = options.color || 'lime';
   const radius = options.radius || 5;
   const showLabels = options.showLabels || false;
+  const mirrorX = options.mirrorX || false;
+
+  // Function to get the correct x-coordinate based on mirroring
+  const getX = (x: number) => {
+    // If the canvas is already mirrored by the context transformation,
+    // we don't need to mirror the points again
+    if (mirrorX) {
+      return Math.max(0, Math.min(canvasWidth, x));
+    } else {
+      // Otherwise, mirror the x-coordinate
+      return Math.max(0, Math.min(canvasWidth, canvasWidth - x));
+    }
+  };
 
   // Draw points
   landmarks.forEach((point, index) => {
+    // Ensure point is within canvas bounds
+    const x = getX(point.x);
+    const y = Math.max(0, Math.min(canvasHeight, point.y));
+
     ctx.beginPath();
-    ctx.arc(point.x, point.y, radius, 0, 2 * Math.PI);
+    ctx.arc(x, y, radius, 0, 2 * Math.PI);
     ctx.fillStyle = color;
     ctx.fill();
 
@@ -83,7 +107,7 @@ export const drawHandLandmarks = (
     if (showLabels) {
       ctx.fillStyle = 'white';
       ctx.font = '10px Arial';
-      ctx.fillText(point.name || `${index}`, point.x + radius + 2, point.y);
+      ctx.fillText(point.name || `${index}`, x + radius + 2, y);
     }
   });
 
@@ -102,9 +126,15 @@ export const drawHandLandmarks = (
   for (const [start, end] of connections) {
     // Ensure both points exist
     if (landmarks[start] && landmarks[end]) {
+      // Ensure points are within canvas bounds
+      const x1 = getX(landmarks[start].x);
+      const y1 = Math.max(0, Math.min(canvasHeight, landmarks[start].y));
+      const x2 = getX(landmarks[end].x);
+      const y2 = Math.max(0, Math.min(canvasHeight, landmarks[end].y));
+
       ctx.beginPath();
-      ctx.moveTo(landmarks[start].x, landmarks[start].y);
-      ctx.lineTo(landmarks[end].x, landmarks[end].y);
+      ctx.moveTo(x1, y1);
+      ctx.lineTo(x2, y2);
       ctx.stroke();
     }
   }
@@ -146,13 +176,8 @@ const analyzeSingleHand = (
   // Check for different possible landmark structures
   let rawLandmarks = null;
 
-  // First try keypoints3D as they might have better data
-  if (hand.keypoints3D && Array.isArray(hand.keypoints3D) && hand.keypoints3D.length > 0) {
-    rawLandmarks = hand.keypoints3D;
-    console.log('Using hand.keypoints3D for landmarks');
-  }
-  // Then try regular keypoints
-  else if (hand.keypoints && Array.isArray(hand.keypoints) && hand.keypoints.length > 0) {
+  // First try regular keypoints as they are in pixel coordinates
+  if (hand.keypoints && Array.isArray(hand.keypoints) && hand.keypoints.length > 0) {
     // Check if keypoints have valid coordinates
     const hasValidCoordinates = hand.keypoints.some((kp: any) =>
       (typeof kp.x === 'number' && !isNaN(kp.x)) ||
@@ -165,6 +190,11 @@ const analyzeSingleHand = (
     } else {
       console.log('hand.keypoints exist but have no valid coordinates');
     }
+  }
+  // Then try keypoints3D as they might have better data
+  else if (hand.keypoints3D && Array.isArray(hand.keypoints3D) && hand.keypoints3D.length > 0) {
+    rawLandmarks = hand.keypoints3D;
+    console.log('Using hand.keypoints3D for landmarks');
   }
   // Finally try landmarks
   else if (hand.landmarks && Array.isArray(hand.landmarks) && hand.landmarks.length > 0) {
@@ -229,22 +259,36 @@ const analyzeSingleHand = (
     // Handle different property names for coordinates
     // Standard format
     if (typeof kp.x === 'number' && !isNaN(kp.x)) {
-      // Check if coordinates are normalized (between 0-1) or absolute
-      const normalizedX = kp.x > 1 ? kp.x / videoW : kp.x;
-      // Mirror the x-coordinate (1 - x) since the video is mirrored with CSS
-      x = (1 - normalizedX) * videoW;
+      // For MediaPipe keypoints, they are already in pixel coordinates
+      if (kp.name && typeof kp.name === 'string') {
+        // These are MediaPipe keypoints with names, already in pixel coordinates
+        x = kp.x;
+      } else {
+        // Check if coordinates are normalized (between 0-1) or absolute
+        const normalizedX = kp.x >= 0 && kp.x <= 1 ? kp.x : kp.x / videoW;
+        // Mirror the x-coordinate (1 - x) since the video is mirrored with CSS
+        x = (1 - normalizedX) * videoW;
+      }
     }
     // Alternative format (x3D)
     else if (typeof kp.x3D === 'number' && !isNaN(kp.x3D)) {
+      const normalizedX = kp.x3D >= 0 && kp.x3D <= 1 ? kp.x3D : kp.x3D / videoW;
       // Mirror the x-coordinate (1 - x) since the video is mirrored with CSS
-      x = (1 - kp.x3D) * videoW;
+      x = (1 - normalizedX) * videoW;
     }
 
     if (typeof kp.y === 'number' && !isNaN(kp.y)) {
-      y = kp.y > 1 ? kp.y : kp.y * videoH;
+      if (kp.name && typeof kp.name === 'string') {
+        // These are MediaPipe keypoints with names, already in pixel coordinates
+        y = kp.y;
+      } else {
+        const normalizedY = kp.y >= 0 && kp.y <= 1 ? kp.y : kp.y / videoH;
+        y = normalizedY * videoH;
+      }
     }
     else if (typeof kp.y3D === 'number' && !isNaN(kp.y3D)) {
-      y = kp.y3D * videoH;
+      const normalizedY = kp.y3D >= 0 && kp.y3D <= 1 ? kp.y3D : kp.y3D / videoH;
+      y = normalizedY * videoH;
     }
 
     if (typeof kp.z === 'number' && !isNaN(kp.z)) {
@@ -275,12 +319,13 @@ const analyzeSingleHand = (
     // If we have an array format instead of object properties
     if (x === null && y === null && Array.isArray(kp) && kp.length >= 2) {
       if (typeof kp[0] === 'number' && !isNaN(kp[0])) {
-        const normalizedX = kp[0] > 1 ? kp[0] / videoW : kp[0];
+        const normalizedX = kp[0] >= 0 && kp[0] <= 1 ? kp[0] : kp[0] / videoW;
         // Mirror the x-coordinate (1 - x) since the video is mirrored with CSS
         x = (1 - normalizedX) * videoW;
       }
       if (typeof kp[1] === 'number' && !isNaN(kp[1])) {
-        y = kp[1] > 1 ? kp[1] : kp[1] * videoH;
+        const normalizedY = kp[1] >= 0 && kp[1] <= 1 ? kp[1] : kp[1] / videoH;
+        y = normalizedY * videoH;
       }
       if (kp.length >= 3 && typeof kp[2] === 'number' && !isNaN(kp[2])) {
         z = kp[2];
@@ -293,12 +338,13 @@ const analyzeSingleHand = (
         const value = kp[key];
         if (typeof value === 'object' && value !== null) {
           if (typeof value.x === 'number' && !isNaN(value.x)) {
-            const normalizedX = value.x > 1 ? value.x / videoW : value.x;
+            const normalizedX = value.x >= 0 && value.x <= 1 ? value.x : value.x / videoW;
             // Mirror the x-coordinate (1 - x) since the video is mirrored with CSS
             x = (1 - normalizedX) * videoW;
           }
           if (typeof value.y === 'number' && !isNaN(value.y)) {
-            y = value.y > 1 ? value.y : value.y * videoH;
+            const normalizedY = value.y >= 0 && value.y <= 1 ? value.y : value.y / videoH;
+            y = normalizedY * videoH;
           }
           if (x !== null && y !== null) break;
         }

@@ -54,15 +54,17 @@ export const HandTrackingWebcam: React.FC<HandTrackingWebcamProps> = ({
         if (videoRef.current) {
           videoRef.current.srcObject = stream;
 
-          // Set fixed dimensions on the video element
-          videoRef.current.width = targetWidth;
-          videoRef.current.height = targetHeight;
-
           // Wait for video to be ready before playing
           videoRef.current.onloadedmetadata = () => {
             if (videoRef.current) {
               // Log the actual dimensions we got
               console.log(`Camera initialized with dimensions: ${videoRef.current.videoWidth}x${videoRef.current.videoHeight}`);
+
+              // Ensure the video element has the correct internal dimensions
+              // This is crucial for proper hand tracking coordinates
+              videoRef.current.width = videoRef.current.videoWidth;
+              videoRef.current.height = videoRef.current.videoHeight;
+
               videoRef.current.play().catch(console.error);
             }
           };
@@ -240,34 +242,36 @@ export const HandTrackingWebcam: React.FC<HandTrackingWebcamProps> = ({
         alignItems: 'center',
         overflow: 'hidden'
       }}>
-        <video
-          ref={videoRef}
-          width={fixedWidth}
-          height={fixedHeight}
-          playsInline
-          muted
-          autoPlay
-          style={{
-            transform: 'scaleX(-1)', // Mirror the video
-            display: cameraEnabled ? 'block' : 'none',
-            width: '100%',
-            height: '100%',
-            objectFit: 'cover',
-            position: 'absolute'
-          }}
-        />
-        {videoElement && (
-          <>
-            <HandDetector
-              videoElement={videoElement}
-              onHandDetection={handleHandDetection}
-            />
-            <HandLandmarkRenderer
-              videoElement={videoElement}
-              detection={detection}
-            />
-          </>
-        )}
+        <div className="relative w-full h-full">
+          <video
+            ref={videoRef}
+            playsInline
+            muted
+            autoPlay
+            style={{
+              transform: 'scaleX(-1)', // Mirror the video
+              display: cameraEnabled ? 'block' : 'none',
+              width: '100%',
+              height: '100%',
+              objectFit: 'cover',
+              position: 'absolute',
+              top: 0,
+              left: 0
+            }}
+          />
+          {videoElement && (
+            <>
+              <HandDetector
+                videoElement={videoElement}
+                onHandDetection={handleHandDetection}
+              />
+              <HandLandmarkRenderer
+                videoElement={videoElement}
+                detection={detection}
+              />
+            </>
+          )}
+        </div>
       </div>
     </div>
   );

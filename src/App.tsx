@@ -11,13 +11,16 @@ import * as TooltipPrimitive from '@radix-ui/react-tooltip';
 // Create a client
 const queryClient = new QueryClient();
 
+// Get the base path from Vite's import.meta.env
+const basePath = import.meta.env.BASE_URL || '/';
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <AppProvider>
       <TooltipPrimitive.Provider>
         <Toaster />
         <Sonner />
-        <BrowserRouter>
+        <BrowserRouter basename={basePath}>
           <Routes>
             <Route path="/" element={<Index />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}

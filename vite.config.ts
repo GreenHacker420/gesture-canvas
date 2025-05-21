@@ -5,10 +5,6 @@ import viteCompression from 'vite-plugin-compression';
 
 // Determine the base path based on the environment
 const getBasePath = () => {
-  // Check if we're in Vercel production environment
-  if (process.env.VERCEL_ENV === 'production') {
-    return '/'; // Use root path for Vercel
-  }
   // Check if we're in Netlify environment
   if (process.env.NETLIFY === 'true') {
     return '/'; // Use root path for Netlify

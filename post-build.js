@@ -34,19 +34,27 @@ async function fixGzPaths() {
     const gzFiles = await findGzFiles(distDir);
 
     for (const filePath of gzFiles) {
-      // Check if the file path contains the absolute path
-      if (filePath.includes('/Users/greenhacker/Desktop/Working/gesture-canvas-art-stream-cef201c5063320596cadbce842d1212064f9ab59')) {
+      // Check if the file path contains an absolute path
+      if (filePath.includes('/Users/') || filePath.includes('/home/')) {
         // Get the correct path relative to the dist directory
-        const relativePath = filePath.replace(distDir, '');
-        const correctPath = path.join(distDir, relativePath.split('/Users/greenhacker/Desktop/Working/gesture-canvas-art-stream-cef201c5063320596cadbce842d1212064f9ab59').pop());
+        const parts = filePath.split('/');
+        const fileNameIndex = parts.findIndex(part => part.endsWith('.gz'));
+        if (fileNameIndex > 0) {
+          // Get the directory name (assets, mediapipe, etc.)
+          const dirName = parts[fileNameIndex - 1];
+          const fileName = parts[fileNameIndex];
 
-        // Create the directory if it doesn't exist
-        const dirName = path.dirname(correctPath);
-        await fs.mkdir(dirName, { recursive: true });
+          // Create the correct path
+          const correctPath = path.join(distDir, dirName, fileName);
 
-        // Move the file to the correct location
-        await fs.rename(filePath, correctPath);
-        console.log(`Fixed: ${path.relative(distDir, correctPath)}`);
+          // Create the directory if it doesn't exist
+          const dirPath = path.dirname(correctPath);
+          await fs.mkdir(dirPath, { recursive: true });
+
+          // Move the file to the correct location
+          await fs.rename(filePath, correctPath);
+          console.log(`Fixed: ${path.relative(distDir, correctPath)}`);
+        }
       }
     }
 
