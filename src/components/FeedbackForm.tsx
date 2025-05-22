@@ -80,14 +80,14 @@ const FeedbackForm: React.FC = () => {
         throw new Error(`Failed to submit feedback: ${response.status} ${errorText}`);
       }
 
-      // Show success message
+      // Show success messages
       toast({
         title: 'Feedback submitted',
         description: 'Thank you for your feedback! We will get back to you soon.',
         variant: 'default',
       });
 
-      // Reset form and close dialog
+      // Reset form and close the dialog
       form.reset();
       setIsOpen(false);
     } catch (error) {

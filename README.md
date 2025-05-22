@@ -2,6 +2,8 @@
 
 A hand gesture-based drawing application that allows you to create art using hand movements captured by your webcam. This interactive web application uses TensorFlow.js and MediaPipe for real-time hand tracking.
 
+**New to Gesture Canvas?** Check out our [Quick Start Guide](QUICK_START.md) to get started quickly!
+
 ## Features
 
 ### Gesture Controls
@@ -16,18 +18,21 @@ A hand gesture-based drawing application that allows you to create art using han
   - **Dual-Hand Drawing**: Both hands with index fingers extended
 - Visual indicators showing current active gesture
 - Mouse/touch fallback for drawing when hand tracking is unavailable
+- See the [Gesture Guide](GESTURE_GUIDE.md) for detailed instructions on using hand gestures
 
 ### User Interface
 - Responsive design that works on desktop and mobile devices
 - Real-time hand tracking with TensorFlow.js and MediaPipe
 - Visual feedback for gesture recognition
 - Color palette for selecting drawing colors
+- Manual brush size control via UI slider (not controlled by hand gestures)
 
 ### Feedback System
 - User feedback form for bug reports, feature requests, and general feedback
-- Email notifications for submitted feedback
-- Confirmation emails to users
+- Email notifications for submitted feedback (development mode only logs email details)
+- Confirmation emails to users (not sent in development mode)
 - Secure form handling with validation and sanitization
+- Rate limiting to prevent abuse (maximum 5 submissions per hour)
 
 ## How can I edit this code?
 
@@ -193,3 +198,36 @@ This project makes use of several open-source libraries and tools:
 ### Contributing
 
 Contributions are welcome! Please feel free to submit a Pull Request.
+
+## Known Limitations
+
+1. **Performance on Low-End Devices**: Hand tracking can be resource-intensive and may not perform optimally on low-end devices.
+
+2. **Lighting Sensitivity**: Hand detection accuracy is dependent on good lighting conditions.
+
+3. **Browser Compatibility**: Some older browsers may not support the required WebGL and WebAssembly features.
+
+4. **Mobile Experience**: While the application works on mobile devices, the experience is optimized for desktop use.
+
+5. **Brush Size Control**: Currently, brush size can only be changed manually through the UI controls, not through hand gestures.
+
+## Planned Future Enhancements
+
+1. **Additional Drawing Tools and Effects**: More creative tools and visual effects.
+
+2. **Improved Gesture Recognition Accuracy**: Enhanced algorithms for better hand tracking in various lighting conditions.
+
+3. **Gallery Feature**: Save and share creations with others.
+
+4. **Collaborative Drawing Mode**: Allow multiple users to draw on the same canvas in real-time.
+
+5. **Mobile-Optimized Experience**: Improved interface and performance for mobile devices.
+
+## Documentation
+
+For more detailed information about the project, please refer to:
+
+- [Comprehensive Documentation](DOCUMENTATION.md) - Detailed technical documentation
+- [Quick Start Guide](QUICK_START.md) - Get started quickly with the application
+- [Gesture Guide](GESTURE_GUIDE.md) - Detailed instructions for using hand gestures
+- [About](ABOUT.md) - Project overview and technical architecture

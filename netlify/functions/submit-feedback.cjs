@@ -16,9 +16,9 @@ const createTransporter = () => {
       user: process.env.SMTP_USER || 'your-email@example.com',
       pass: process.env.SMTP_PASS || 'your-password',
     },
-    connectionTimeout: 5000, // 5 seconds timeout for connection
-    greetingTimeout: 5000,   // 5 seconds timeout for greeting
-    socketTimeout: 5000,     // 5 seconds timeout for socket
+    connectionTimeout: 5000, // 5-second timeout for connection
+    greetingTimeout: 5000,   // 5-second timeout for greeting
+    socketTimeout: 5000,     // 5-second timeout for socket
   });
 };
 
@@ -113,7 +113,7 @@ exports.handler = async (event, context) => {
     // Log the received data for debugging
     console.log('Received feedback data:', JSON.stringify(data));
 
-    // Check for missing fields and provide detailed error
+    // Check for missing fields and provide a detailed error
     const missingFields = [];
     if (!data.name) missingFields.push('name');
     if (!data.email) missingFields.push('email');
@@ -188,7 +188,7 @@ exports.handler = async (event, context) => {
         `,
       };
 
-      // Email to user
+      // Email to a user
       const userMailOptions = {
         from: process.env.SMTP_USER || 'your-email@example.com',
         to: sanitizedData.email,
@@ -203,7 +203,7 @@ exports.handler = async (event, context) => {
         `,
       };
 
-      // In development mode, just log the emails instead of sending them
+      // In development mode, log the emails instead of sending them
       if (isDevelopment) {
         console.log('Development mode: Email would be sent with the following details:');
         console.log('Admin email:', adminMailOptions);
