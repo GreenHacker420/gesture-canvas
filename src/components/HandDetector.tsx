@@ -110,7 +110,11 @@ export const HandDetector: React.FC<HandDetectorProps> = ({
               isDrawing: false,
               isClearCanvas: false,
               isChangeColor: false,
-              isEraser: false
+              isEraser: false,
+              isPaused: false,
+              isDualHandDrawing: false,
+              fingerDistance: 0,
+              gestureHoldTime: 0
             }
           });
         }
@@ -233,6 +237,7 @@ export const HandDetector: React.FC<HandDetectorProps> = ({
           if (Math.abs(detection.handInViewConfidence - prevDetectionRef.current.confidence) > 0.01) {
             setConfidence(detection.handInViewConfidence);
             prevDetectionRef.current.confidence = detection.handInViewConfidence;
+            console.log('Hand confidence updated to:', detection.handInViewConfidence);
           }
         } else if (prevDetectionRef.current.confidence > 0) {
           // Only update if confidence was previously non-zero
@@ -274,6 +279,7 @@ export const HandDetector: React.FC<HandDetectorProps> = ({
         opacity: confidence,
         transition: 'opacity 0.3s ease-in-out'
       }}
+      data-confidence={confidence.toString()}
     />
   );
 };

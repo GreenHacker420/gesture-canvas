@@ -12,12 +12,31 @@ const StatusCard = () => {
   // Listen for hand detection confidence updates from HandDetector
   useEffect(() => {
     const handConfidenceElement = document.getElementById('hand-detector');
-    if (!handConfidenceElement) return;
+    if (!handConfidenceElement) {
+      console.warn('Hand detector element not found');
+      return;
+    }
 
+    // Initial read of the confidence value
+    const initialConfidence = parseFloat(handConfidenceElement.getAttribute('data-confidence') || '0');
+    setHandConfidence(initialConfidence * 100);
+    setShowTips(initialConfidence < 0.5);
+
+    console.log('Initial hand confidence:', initialConfidence);
+
+    // Set up polling as a backup to ensure updates
+    const pollInterval = setInterval(() => {
+      const currentConfidence = parseFloat(handConfidenceElement.getAttribute('data-confidence') || '0');
+      setHandConfidence(currentConfidence * 100);
+      setShowTips(currentConfidence < 0.5);
+    }, 500); // Poll every 500ms
+
+    // Set up mutation observer for immediate updates
     const observer = new MutationObserver((mutations) => {
       mutations.forEach((mutation) => {
         if (mutation.type === 'attributes' && mutation.attributeName === 'data-confidence') {
           const confidenceValue = parseFloat(handConfidenceElement.getAttribute('data-confidence') || '0');
+          console.log('Hand confidence updated:', confidenceValue);
           setHandConfidence(confidenceValue * 100);
           // Show tips more often to help users
           setShowTips(confidenceValue < 0.5);
@@ -25,10 +44,14 @@ const StatusCard = () => {
       });
     });
 
-    observer.observe(handConfidenceElement, { attributes: true });
+    observer.observe(handConfidenceElement, {
+      attributes: true,
+      attributeFilter: ['data-confidence']
+    });
 
     return () => {
       observer.disconnect();
+      clearInterval(pollInterval);
     };
   }, []);
 
@@ -77,7 +100,9 @@ const StatusCard = () => {
               <span className="font-bold">Hand Detection</span>
             </h3>
             <div className="flex items-center">
+              {/* Add key to force re-render when value changes */}
               <Progress
+                key={`hand-confidence-${Math.round(handConfidence)}`}
                 value={handConfidence}
                 className={`h-3 flex-1 mr-2 ${
                   handConfidence > 70 ? 'bg-green-100' :

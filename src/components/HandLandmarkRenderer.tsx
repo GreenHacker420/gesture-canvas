@@ -86,19 +86,14 @@ export const HandLandmarkRenderer: React.FC<HandLandmarkRendererProps> = ({
     canvas.width = videoWidth;
     canvas.height = videoHeight;
 
-    console.log(`Canvas dimensions set to: ${canvas.width}x${canvas.height} (video: ${videoWidth}x${videoHeight})`);
+    // Debug logging removed
 
     // Clear canvas
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
     // Draw landmarks for each detected hand
     if (detection && detection.isHandDetected) {
-      // Log detection info for debugging
-      console.log('HandLandmarkRenderer: detection info', {
-        isHandDetected: detection.isHandDetected,
-        handsCount: detection.hands.length,
-        handsWithLandmarks: detection.hands.filter(h => h.landmarks && h.landmarks.length === 21).length
-      });
+      // Debug logging removed
 
       // Save the current transformation matrix
       ctx.save();
@@ -110,27 +105,15 @@ export const HandLandmarkRenderer: React.FC<HandLandmarkRendererProps> = ({
 
       // Draw landmarks for each hand
       detection.hands.forEach((hand, index) => {
-        console.log(`Rendering hand ${index}:`, {
-          hasLandmarks: !!hand.landmarks,
-          landmarksLength: hand.landmarks ? hand.landmarks.length : 0,
-          isArray: hand.landmarks ? Array.isArray(hand.landmarks) : false,
-          handedness: hand.handedness
-        });
+        // Debug logging removed
 
         // Check if hand has valid landmarks
         if (hand.landmarks && Array.isArray(hand.landmarks)) {
-          // Log the first few landmarks for debugging
-          console.log(`First few landmarks for hand ${index}:`,
-            hand.landmarks.slice(0, 3).map(lm => ({ x: lm.x, y: lm.y }))
-          );
-
           // Verify landmarks have valid coordinates
           const validLandmarks = hand.landmarks.filter(lm =>
             typeof lm.x === 'number' && !isNaN(lm.x) &&
             typeof lm.y === 'number' && !isNaN(lm.y)
           );
-
-          console.log(`Hand ${index} has ${validLandmarks.length}/${hand.landmarks.length} valid landmarks`);
 
           if (validLandmarks.length > 0) {
             // Draw all hand landmarks with labels

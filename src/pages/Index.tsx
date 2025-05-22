@@ -10,6 +10,7 @@ import GestureHandler from '@/components/GestureHandler';
 import { Button } from '@/components/ui/button';
 import { ArrowLeftRight } from 'lucide-react';
 import MovableCamera from '@/components/MovableCamera';
+import FeedbackForm from '@/components/FeedbackForm';
 
 const Index = () => {
   const [isCameraLeft, setIsCameraLeft] = React.useState(true);
@@ -46,9 +47,20 @@ const Index = () => {
         <div className="container max-w-6xl">
           {!isFullscreen && (
             <div className="text-center mb-8">
-              <h1 className="text-4xl font-bold mb-2 bg-clip-text text-transparent bg-gradient-to-r from-brush-blue to-brush-purple">
-                Gesture Canvas
-              </h1>
+              <div className="flex justify-between items-center mb-4">
+                <div className="flex-1">
+                  {/* Empty div for spacing */}
+                </div>
+                <div className="flex-1">
+                  <h1 className="text-4xl font-bold mb-2 bg-clip-text text-transparent bg-gradient-to-r from-brush-blue to-brush-purple">
+                    Gesture Canvas
+                  </h1>
+                </div>
+                <div className="flex-1 flex justify-end">
+                  <FeedbackForm />
+                </div>
+              </div>
+
               <p className="text-gray-600 max-w-2xl mx-auto mb-8">
                 Draw with just your hand! Use gestures to change colors, clear the canvas, and create art without touching your screen.
               </p>
@@ -186,6 +198,11 @@ const Index = () => {
                   />
                 )}
               </GestureHandler>
+
+              {/* Feedback button in fullscreen mode */}
+              <div className="absolute top-4 right-20 z-50">
+                <FeedbackForm />
+              </div>
             </div>
           )}
 

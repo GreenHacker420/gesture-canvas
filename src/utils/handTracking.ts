@@ -9,10 +9,14 @@ export interface SingleHandDetection {
   indexFingerPosition: { x: number, y: number } | null;
   handedness: 'Left' | 'Right' | 'Unknown';
   gesture: {
-    isDrawing: boolean;
-    isClearCanvas: boolean;
-    isChangeColor: boolean;
-    isEraser: boolean;
+    isDrawing: boolean;           // Index finger extended, other fingers closed
+    isClearCanvas: boolean;       // All fingers extended (open palm)
+    isChangeColor: boolean;       // Three fingers extended (index, middle, ring)
+    isEraser: boolean;            // Two fingers extended (index and middle)
+    isPaused: boolean;            // Closed fist (all fingers closed)
+    isDualHandDrawing: boolean;   // Both hands with index fingers extended
+    fingerDistance?: number;      // Distance between fingers for eraser size
+    gestureHoldTime?: number;     // Time the gesture has been held (for clear canvas)
   };
 }
 
@@ -24,10 +28,14 @@ export interface HandDetection {
   handInViewConfidence: number;
   indexFingerPosition: { x: number, y: number } | null;
   gesture: {
-    isDrawing: boolean;
-    isClearCanvas: boolean;
-    isChangeColor: boolean;
-    isEraser: boolean;
+    isDrawing: boolean;           // Index finger extended, other fingers closed
+    isClearCanvas: boolean;       // All fingers extended (open palm)
+    isChangeColor: boolean;       // Three fingers extended (index, middle, ring)
+    isEraser: boolean;            // Two fingers extended (index and middle)
+    isPaused: boolean;            // Closed fist (all fingers closed)
+    isDualHandDrawing: boolean;   // Both hands with index fingers extended
+    fingerDistance?: number;      // Distance between fingers for eraser size
+    gestureHoldTime?: number;     // Time the gesture has been held (for clear canvas)
   };
 }
 
@@ -72,8 +80,7 @@ export const drawHandLandmarks = (
   const canvasWidth = ctx.canvas.width;
   const canvasHeight = ctx.canvas.height;
 
-  // Log canvas dimensions for debugging
-  console.log(`Drawing landmarks on canvas: ${canvasWidth}x${canvasHeight}`);
+  // Debug logging removed
 
   const color = options.color || 'lime';
   const radius = options.radius || 5;
@@ -156,7 +163,11 @@ const analyzeSingleHand = (
       isDrawing: false,
       isClearCanvas: false,
       isChangeColor: false,
-      isEraser: false
+      isEraser: false,
+      isPaused: false,
+      isDualHandDrawing: false,
+      fingerDistance: 0,
+      gestureHoldTime: 0
     }
   };
 
@@ -505,55 +516,79 @@ const analyzeSingleHand = (
   const ringFingerExtended = isFingerExtended('ring_finger');
   const pinkyExtended = isFingerExtended('pinky');
 
-  // Log the values for debugging
-  console.log('[Gesture Debug] thumbExtended:', thumbExtended, 'indexFingerExtended:', indexFingerExtended, 'middleFingerExtended:', middleFingerExtended, 'ringFingerExtended:', ringFingerExtended, 'pinkyExtended:', pinkyExtended);
+  // Debug logging removed
 
-  // Log the actual landmark coordinates for index finger
-  const logLandmark = (name: string) => {
-    const lm = landmarks.find(l => l.name === name);
-    if (lm) {
-      console.log(`[Landmark Debug] ${name}: x=${lm.x}, y=${lm.y}, z=${lm.z}`);
-    } else {
-      console.log(`[Landmark Debug] ${name}: not found`);
-    }
-  };
-  logLandmark('index_finger_tip');
-  logLandmark('index_finger_pip');
-  logLandmark('index_finger_mcp');
+  // Debug logging removed
 
   // Calculate distances for specific gestures
   const indexTip = landmarks.find((kp: any) => kp.name === 'index_finger_tip');
   const middleTip = landmarks.find((kp: any) => kp.name === 'middle_finger_tip');
+  const ringTip = landmarks.find((kp: any) => kp.name === 'ring_finger_tip');
 
-  // Check if index and middle finger are extended and close to each other (for eraser)
+  // Calculate distance between index and middle finger tips (for eraser size)
+  let fingerDistance = 0;
   let fingersClose = false;
+
   if (indexTip && middleTip &&
       indexTip.x !== null && indexTip.y !== null &&
-      middleTip.x !== null && middleTip.y !== null &&
-      indexFingerExtended && middleFingerExtended) {
-    const distance = Math.sqrt(
+      middleTip.x !== null && middleTip.y !== null) {
+    fingerDistance = Math.sqrt(
       Math.pow(indexTip.x - middleTip.x, 2) +
       Math.pow(indexTip.y - middleTip.y, 2)
     );
-    fingersClose = distance < 30;
+    fingersClose = fingerDistance < 30;
   }
+
+  // Count extended fingers for gesture detection
+  const extendedFingerCount = [
+    thumbExtended,
+    indexFingerExtended,
+    middleFingerExtended,
+    ringFingerExtended,
+    pinkyExtended
+  ].filter(Boolean).length;
+
+  // Check for specific finger combinations
+  const isThreeFingerExtended = indexFingerExtended && middleFingerExtended && ringFingerExtended &&
+                               !thumbExtended && !pinkyExtended;
+
+  const isTwoFingerExtended = indexFingerExtended && middleFingerExtended &&
+                             !thumbExtended && !ringFingerExtended && !pinkyExtended;
+
+  const isAllFingersClosed = !thumbExtended && !indexFingerExtended && !middleFingerExtended &&
+                            !ringFingerExtended && !pinkyExtended;
+
+  const isAllFingersExtended = thumbExtended && indexFingerExtended && middleFingerExtended &&
+                              ringFingerExtended && pinkyExtended;
+
+  const isOnlyIndexExtended = indexFingerExtended && !thumbExtended && !middleFingerExtended &&
+                             !ringFingerExtended && !pinkyExtended;
 
   // Determine gestures based on finger positions
   const gesture = {
-    isDrawing: indexFingerExtended && !middleFingerExtended && !thumbExtended,
-    isClearCanvas: thumbExtended && indexFingerExtended && middleFingerExtended,
-    isChangeColor: thumbExtended && !indexFingerExtended && !middleFingerExtended,
-    isEraser: indexFingerExtended && middleFingerExtended && fingersClose
+    // Drawing Mode: Index finger extended, other fingers closed
+    isDrawing: isOnlyIndexExtended,
+
+    // Clear Canvas: All fingers extended (open palm)
+    isClearCanvas: isAllFingersExtended,
+
+    // Color Selection: Three fingers extended (index, middle, ring)
+    isChangeColor: isThreeFingerExtended,
+
+    // Eraser Mode: Two fingers extended (index and middle)
+    isEraser: isTwoFingerExtended,
+
+    // Stop Drawing: Closed fist (all fingers closed)
+    isPaused: isAllFingersClosed,
+
+    // Dual-Hand Drawing is determined at the HandDetection level
+    isDualHandDrawing: false,
+
+    // Store finger distance for eraser size adjustment
+    fingerDistance: fingerDistance
   };
 
-  // Log gesture detection for debugging
-  console.log('[Gesture Debug] Gesture detection:', {
-    indexFingerExtended,
-    middleFingerExtended,
-    thumbExtended,
-    fingersClose,
-    gesture
-  });
+  // Debug logging removed
 
   // Create a clean landmarks array with no null values
   const cleanLandmarks = landmarks.map(lm => ({
@@ -606,7 +641,11 @@ export const detectHand = async (
       isDrawing: false,
       isClearCanvas: false,
       isChangeColor: false,
-      isEraser: false
+      isEraser: false,
+      isPaused: false,
+      isDualHandDrawing: false,
+      fingerDistance: 0,
+      gestureHoldTime: 0
     }
   };
 
@@ -628,14 +667,11 @@ export const detectHand = async (
     // Run hand detection with better error handling
     let hands;
     try {
-      console.log('Running hand detection...');
+      // Debug logging removed
       hands = await detector.estimateHands(video, {
         flipHorizontal: false,
         staticImageMode: false
       });
-
-      console.log('Hand detection result:', JSON.stringify(hands).substring(0, 200) + '...');
-      console.log('Number of hands detected:', hands ? hands.length : 0);
 
       if (!hands || hands.length === 0) {
         return defaultDetection;
@@ -698,18 +734,19 @@ export const detectHand = async (
       .map(h => h.landmarks)
       .filter(landmarks => landmarks !== null) as { x: number; y: number; z: number; name: string }[][];
 
-    // Log detection results for debugging
-    console.log('Hand detection results:', {
-      handsDetected: hands.length,
-      validHandsWithLandmarks: validHands.length,
-      primaryHand: {
-        handedness: primaryHand.handedness,
-        confidence: primaryHand.confidence,
-        indexFingerPosition: primaryHand.indexFingerPosition,
-        hasValidLandmarks: primaryHand.landmarks && primaryHand.landmarks.length === 21,
-        gesture: primaryHand.gesture
-      }
-    });
+    // Check for dual-hand drawing (both hands with index fingers extended)
+    const isDualHandDrawing = validHands.length >= 2 &&
+                             validHands.filter(hand =>
+                               hand.gesture.isDrawing && hand.indexFingerPosition !== null
+                             ).length >= 2;
+
+    // Create a combined gesture state that considers all hands
+    const combinedGesture = {
+      ...primaryHand.gesture,
+      isDualHandDrawing: isDualHandDrawing
+    };
+
+    // Debug logging removed
 
     return {
       isHandDetected: true,
@@ -717,7 +754,7 @@ export const detectHand = async (
       landmarks: allLandmarks.length > 0 ? allLandmarks : null,
       handInViewConfidence,
       indexFingerPosition: primaryHand.indexFingerPosition,
-      gesture: primaryHand.gesture
+      gesture: combinedGesture
     };
   } catch (error) {
     console.error('Error in hand detection:', error);

@@ -191,7 +191,7 @@ const MultiHandDrawingCanvas: React.FC<MultiHandDrawingCanvasProps> = ({
     const context = canvas.getContext('2d');
     if (!context) return;
 
-    console.log(`Canvas dimensions: ${canvas.width}x${canvas.height}, isDrawing: ${isDrawing}, drawingPosition: ${drawingPosition ? 'valid' : 'null'}`);
+    // Debug logging removed
 
     // Create a new map for this render cycle - but don't include it in dependencies
     const newLastPositions = new Map(lastPositions);
@@ -204,7 +204,7 @@ const MultiHandDrawingCanvas: React.FC<MultiHandDrawingCanvasProps> = ({
           typeof drawingPosition.y !== 'number' || isNaN(drawingPosition.y)) {
         console.warn(`Invalid drawing position detected: x=${drawingPosition.x}, y=${drawingPosition.y}`);
       } else {
-        console.log(`MultiHandDrawingCanvas: Drawing with primary hand at x=${drawingPosition.x}, y=${drawingPosition.y}`);
+        // Debug logging removed
         isAnyHandDrawing = true;
 
         // Get canvas dimensions for scaling
@@ -227,7 +227,7 @@ const MultiHandDrawingCanvas: React.FC<MultiHandDrawingCanvasProps> = ({
         const clampedX = Math.min(canvas.width, Math.max(0, x));
         const clampedY = Math.min(canvas.height, Math.max(0, y));
 
-        console.log(`Canvas scaled position: x=${x}, y=${y}, canvas size: ${canvas.width}x${canvas.height}`);
+        // Debug logging removed
 
         // Update cursor position for the floating preview
         // Convert canvas coordinates back to screen coordinates for the cursor
@@ -247,7 +247,7 @@ const MultiHandDrawingCanvas: React.FC<MultiHandDrawingCanvasProps> = ({
         // Draw line if we have a previous position
         const lastPos = newLastPositions.get('primary');
         if (lastPos) {
-          console.log(`Drawing line from (${lastPos.x}, ${lastPos.y}) to (${clampedX}, ${clampedY})`);
+          // Debug logging removed
           context.beginPath();
           context.lineWidth = brushSize;
           context.lineCap = 'round';

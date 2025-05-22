@@ -12,7 +12,10 @@ interface HandTrackingWebcamProps {
     clearCanvas: boolean,
     changeColor: boolean,
     maxConfidence: number,
-    additionalPositions?: { x: number, y: number }[]
+    additionalPositions?: { x: number, y: number }[],
+    isPaused?: boolean,
+    isDualHandDrawing?: boolean,
+    fingerDistance?: number
   ) => void;
   width?: number;
   height?: number;
@@ -202,6 +205,12 @@ export const HandTrackingWebcam: React.FC<HandTrackingWebcamProps> = ({
         console.log(`Drawing with multiple hands: Primary hand and ${secondaryDrawingPositions.length} additional hand(s)`);
       }
 
+      // Get finger distance for eraser size adjustment
+      let fingerDistance = 0;
+      if (detection.gesture.fingerDistance) {
+        fingerDistance = detection.gesture.fingerDistance;
+      }
+
       // Use our calculated primaryIsDrawing instead of the global detection.gesture.isDrawing
       // This gives us more precise control over when drawing happens
       onHandGesture(
@@ -210,11 +219,14 @@ export const HandTrackingWebcam: React.FC<HandTrackingWebcamProps> = ({
         detection.gesture.isClearCanvas,
         detection.gesture.isChangeColor,
         maxConfidence,
-        secondaryDrawingPositions.length > 0 ? secondaryDrawingPositions : undefined
+        secondaryDrawingPositions.length > 0 ? secondaryDrawingPositions : undefined,
+        detection.gesture.isPaused,
+        detection.gesture.isDualHandDrawing,
+        fingerDistance
       );
     } else {
       // No hands detected
-      onHandGesture(false, null, false, false, 0, undefined);
+      onHandGesture(false, null, false, false, 0, undefined, false, false, 0);
     }
   };
 

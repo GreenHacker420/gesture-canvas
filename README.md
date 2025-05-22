@@ -4,12 +4,30 @@ A hand gesture-based drawing application that allows you to create art using han
 
 ## Features
 
+### Gesture Controls
 - Draw with hand gestures using your webcam
 - Support for drawing with both hands simultaneously
-- Different gestures for drawing, erasing, changing colors, and clearing the canvas
+- Six different gesture controls:
+  - **Drawing Mode**: Index finger extended, other fingers closed
+  - **Color Selection**: Three fingers extended (index, middle, ring)
+  - **Stop Drawing**: Closed fist (all fingers closed)
+  - **Clear Canvas**: All fingers extended (open palm) - hold for 1-2 seconds
+  - **Eraser Mode**: Two fingers extended (index and middle) - adjust size with finger distance
+  - **Dual-Hand Drawing**: Both hands with index fingers extended
+- Visual indicators showing current active gesture
 - Mouse/touch fallback for drawing when hand tracking is unavailable
+
+### User Interface
 - Responsive design that works on desktop and mobile devices
 - Real-time hand tracking with TensorFlow.js and MediaPipe
+- Visual feedback for gesture recognition
+- Color palette for selecting drawing colors
+
+### Feedback System
+- User feedback form for bug reports, feature requests, and general feedback
+- Email notifications for submitted feedback
+- Confirmation emails to users
+- Secure form handling with validation and sanitization
 
 ## How can I edit this code?
 
@@ -105,18 +123,27 @@ npm run deploy
 
 ### Netlify
 
-The project can also be deployed on Netlify with full support for MediaPipe.
+The project can be deployed on Netlify with full support for MediaPipe and serverless functions.
 
 #### Automatic Deployment
 
 1. Connect your GitHub repository to Netlify
 2. Set the build command to `npm run build:netlify`
 3. Set the publish directory to `dist`
+4. Set the following environment variables in your Netlify dashboard:
+   - `SMTP_HOST`: Your SMTP server hostname
+   - `SMTP_PORT`: Your SMTP server port (usually 587)
+   - `SMTP_SECURE`: Whether to use TLS (true/false)
+   - `SMTP_USER`: Your SMTP username/email
+   - `SMTP_PASS`: Your SMTP password
+   - `ADMIN_EMAIL`: Email address to receive feedback notifications
+   - `SEND_EMAILS_IN_DEV`: Set to 'true' to send actual emails in development mode
 
 The project includes a `netlify.toml` configuration file and custom plugin to ensure:
 - Proper handling of MediaPipe WASM files
 - Correct CORS headers
 - Optimized asset caching
+- Serverless functions configuration
 
 #### Manual Deployment
 
@@ -131,6 +158,21 @@ netlify login
 
 # Deploy to Netlify
 netlify deploy --prod
+```
+
+#### Local Development with Netlify Functions
+
+To test the serverless functions locally:
+
+```sh
+# Copy the example environment file
+cp .env.example .env
+
+# Edit the .env file with your SMTP settings
+nano .env
+
+# Start the development server with Netlify Functions support
+npm run dev:netlify
 ```
 
 ## Credits and Contributions

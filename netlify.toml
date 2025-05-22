@@ -1,6 +1,7 @@
 [build]
   command = "npm run build:netlify"
   publish = "dist"
+  functions = "netlify/functions"
 
 [[plugins]]
   package = "./netlify/plugins/mediapipe-handler"
@@ -52,5 +53,5 @@
 
 [dev]
   command = "npm run dev"
-  port = 8080
+  port = 8888
   targetPort = 8080
