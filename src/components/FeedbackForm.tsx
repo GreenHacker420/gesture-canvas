@@ -84,7 +84,7 @@ const FeedbackForm: React.FC = () => {
       toast({
         title: 'Feedback submitted',
         description: 'Thank you for your feedback! We will get back to you soon.',
-        variant: 'success',
+        variant: 'default',
       });
 
       // Reset form and close dialog

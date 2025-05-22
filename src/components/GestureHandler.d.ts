@@ -8,7 +8,7 @@ interface GestureHandlerProps {
         additionalPositions?: {
             x: number;
             y: number;
-        }[]) => void;
+        }[], isPaused?: boolean, isDualHandDrawing?: boolean, fingerDistance?: number) => void;
     }) => React.ReactNode;
 }
 declare const GestureHandler: React.FC<GestureHandlerProps>;

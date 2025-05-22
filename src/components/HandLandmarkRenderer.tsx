@@ -17,7 +17,7 @@ export const HandLandmarkRenderer: React.FC<HandLandmarkRendererProps> = ({
   const [canvasDimensions, setCanvasDimensions] = useState({ width: 640, height: 360 });
 
   // Track the actual display dimensions for scaling
-  const [displayDimensions, setDisplayDimensions] = useState({ width: 0, height: 0 });
+  const [, setDisplayDimensions] = useState({ width: 0, height: 0 });
 
   // Update canvas dimensions when video dimensions change
   useEffect(() => {

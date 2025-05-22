@@ -9,6 +9,7 @@ interface AppContextType {
   setIsDrawing: (isDrawing: boolean) => void;
   cameraEnabled: boolean;
   setCameraEnabled: (enabled: boolean) => void;
+  theme?: string;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -40,4 +41,4 @@ export const useApp = () => {
     throw new Error('useApp must be used within an AppProvider');
   }
   return context;
-}; 
+};

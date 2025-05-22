@@ -148,7 +148,7 @@ export const drawHandLandmarks = (
 };
 
 // Process a single hand detection result
-const analyzeSingleHand = (
+export const analyzeSingleHand = (
   hand: any,
   videoWidth?: number,
   videoHeight?: number
@@ -523,11 +523,11 @@ const analyzeSingleHand = (
   // Calculate distances for specific gestures
   const indexTip = landmarks.find((kp: any) => kp.name === 'index_finger_tip');
   const middleTip = landmarks.find((kp: any) => kp.name === 'middle_finger_tip');
-  const ringTip = landmarks.find((kp: any) => kp.name === 'ring_finger_tip');
+  // const ringTip = landmarks.find((kp: any) => kp.name === 'ring_finger_tip'); // Commented out as it's unused
 
   // Calculate distance between index and middle finger tips (for eraser size)
   let fingerDistance = 0;
-  let fingersClose = false;
+  // let fingersClose = false; // Commented out as it's unused
 
   if (indexTip && middleTip &&
       indexTip.x !== null && indexTip.y !== null &&
@@ -536,17 +536,17 @@ const analyzeSingleHand = (
       Math.pow(indexTip.x - middleTip.x, 2) +
       Math.pow(indexTip.y - middleTip.y, 2)
     );
-    fingersClose = fingerDistance < 30;
+    // fingersClose = fingerDistance < 30; // Commented out as it's unused
   }
 
   // Count extended fingers for gesture detection
-  const extendedFingerCount = [
-    thumbExtended,
-    indexFingerExtended,
-    middleFingerExtended,
-    ringFingerExtended,
-    pinkyExtended
-  ].filter(Boolean).length;
+  // const extendedFingerCount = [
+  //   thumbExtended,
+  //   indexFingerExtended,
+  //   middleFingerExtended,
+  //   ringFingerExtended,
+  //   pinkyExtended
+  // ].filter(Boolean).length; // Commented out as it's unused
 
   // Check for specific finger combinations
   const isThreeFingerExtended = indexFingerExtended && middleFingerExtended && ringFingerExtended &&

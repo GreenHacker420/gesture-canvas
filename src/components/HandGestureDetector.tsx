@@ -72,7 +72,11 @@ const HandDetector: React.FC<HandDetectorProps> = ({
               isDrawing: false,
               isClearCanvas: false,
               isChangeColor: false,
-              isEraser: false
+              isEraser: false,
+              isPaused: false,
+              isDualHandDrawing: false,
+              fingerDistance: 0,
+              gestureHoldTime: 0
             }
           });
         }
@@ -116,7 +120,7 @@ const HandDetector: React.FC<HandDetectorProps> = ({
         if (detection.isHandDetected) {
           // Check any hand for eraser gesture
           const anyHandHasEraserGesture = detection.hands.some(hand => hand.gesture.isEraser);
-          
+
           if (anyHandHasEraserGesture) {
             setIsEraserActive(true);
             setIsEraser(true);
@@ -151,9 +155,9 @@ const HandDetector: React.FC<HandDetectorProps> = ({
   }, [isDetecting, detector, videoElement, onHandDetection, setIsEraser]);
 
   return (
-    <div 
-      id="hand-detector" 
-      data-eraser-active={isEraserActive ? "true" : "false"} 
+    <div
+      id="hand-detector"
+      data-eraser-active={isEraserActive ? "true" : "false"}
       className="hidden"
     />
   );

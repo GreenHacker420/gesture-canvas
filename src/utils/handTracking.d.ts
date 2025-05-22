@@ -18,6 +18,10 @@ export interface SingleHandDetection {
         isClearCanvas: boolean;
         isChangeColor: boolean;
         isEraser: boolean;
+        isPaused: boolean;
+        isDualHandDrawing: boolean;
+        fingerDistance?: number;
+        gestureHoldTime?: number;
     };
 }
 export interface HandDetection {
@@ -39,6 +43,10 @@ export interface HandDetection {
         isClearCanvas: boolean;
         isChangeColor: boolean;
         isEraser: boolean;
+        isPaused: boolean;
+        isDualHandDrawing: boolean;
+        fingerDistance?: number;
+        gestureHoldTime?: number;
     };
 }
 export declare const initializeHandTracking: () => Promise<handPoseDetection.HandDetector | null>;
@@ -51,5 +59,7 @@ export declare const drawHandLandmarks: (ctx: CanvasRenderingContext2D, landmark
     color?: string;
     radius?: number;
     showLabels?: boolean;
+    mirrorX?: boolean;
 }) => void;
+export declare const analyzeSingleHand: (hand: any, videoWidth?: number, videoHeight?: number) => SingleHandDetection;
 export declare const detectHand: (detector: handPoseDetection.HandDetector | null, video: HTMLVideoElement | null) => Promise<HandDetection>;

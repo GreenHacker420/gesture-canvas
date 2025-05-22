@@ -3,7 +3,6 @@ import { useEffect } from "react";
 
 const NotFound = () => {
   const location = useLocation();
-  const basePath = import.meta.env.BASE_URL || '/';
 
   useEffect(() => {
     console.error(

@@ -7,6 +7,7 @@ interface AppContextType {
     setIsDrawing: (isDrawing: boolean) => void;
     cameraEnabled: boolean;
     setCameraEnabled: (enabled: boolean) => void;
+    theme?: string;
 }
 export declare const AppProvider: React.FC<{
     children: React.ReactNode;

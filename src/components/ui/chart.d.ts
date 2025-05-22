@@ -55,7 +55,7 @@ declare const ChartTooltipContent: React.ForwardRefExoticComponent<Omit<Recharts
     labelKey?: string;
 }, "ref"> & React.RefAttributes<HTMLDivElement>>;
 declare const ChartLegend: typeof RechartsPrimitive.Legend;
-declare const ChartLegendContent: React.ForwardRefExoticComponent<Omit<React.ClassAttributes<HTMLDivElement> & React.HTMLAttributes<HTMLDivElement> & Pick<RechartsPrimitive.LegendProps, "payload" | "verticalAlign"> & {
+declare const ChartLegendContent: React.ForwardRefExoticComponent<Omit<React.ClassAttributes<HTMLDivElement> & React.HTMLAttributes<HTMLDivElement> & Pick<RechartsPrimitive.LegendProps, "verticalAlign" | "payload"> & {
     hideIcon?: boolean;
     nameKey?: string;
 }, "ref"> & React.RefAttributes<HTMLDivElement>>;

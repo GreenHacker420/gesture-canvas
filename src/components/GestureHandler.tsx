@@ -142,7 +142,7 @@ const GestureHandler: React.FC<GestureHandlerProps> = ({ children }) => {
           toast({
             title: "Canvas cleared",
             description: "Canvas has been cleared by gesture",
-            variant: "success"
+            variant: "default"
           });
           // Reset the timer to prevent multiple clears
           lastGestureRef.current.clearCanvasHoldStartTime = now + 3000; // Add a cooldown
@@ -242,7 +242,7 @@ const GestureHandler: React.FC<GestureHandlerProps> = ({ children }) => {
           <div className="bg-white/90 p-4 rounded-lg shadow-lg border border-gray-200 max-w-md w-full">
             <h3 className="text-lg font-bold mb-2">Select a Color</h3>
             <div className="flex flex-wrap gap-4 justify-center">
-              {brushColorOptions.map((color, index) => (
+              {brushColorOptions.map((color) => (
                 <div
                   key={color.value}
                   className={`w-16 h-16 rounded-full cursor-pointer transition-all duration-200 flex items-center justify-center
