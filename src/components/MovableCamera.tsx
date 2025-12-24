@@ -43,11 +43,11 @@ const MovableCamera: React.FC<MovableCameraProps> = ({
       if (isDragging) {
         const newX = e.clientX - dragOffset.x;
         const newY = e.clientY - dragOffset.y;
-        
+
         // Ensure the camera stays within the window bounds
         const maxX = window.innerWidth - (containerRef.current?.clientWidth || 200);
         const maxY = window.innerHeight - (containerRef.current?.clientHeight || 150);
-        
+
         setPosition({
           x: Math.max(0, Math.min(newX, maxX)),
           y: Math.max(0, Math.min(newY, maxY))
@@ -64,16 +64,16 @@ const MovableCamera: React.FC<MovableCameraProps> = ({
         const touch = e.touches[0];
         const newX = touch.clientX - dragOffset.x;
         const newY = touch.clientY - dragOffset.y;
-        
+
         // Ensure the camera stays within the window bounds
         const maxX = window.innerWidth - (containerRef.current?.clientWidth || 200);
         const maxY = window.innerHeight - (containerRef.current?.clientHeight || 150);
-        
+
         setPosition({
           x: Math.max(0, Math.min(newX, maxX)),
           y: Math.max(0, Math.min(newY, maxY))
         });
-        
+
         e.preventDefault(); // Prevent scrolling while dragging
       }
     };
@@ -112,18 +112,18 @@ const MovableCamera: React.FC<MovableCameraProps> = ({
   };
 
   return (
-    <div 
+    <div
       ref={containerRef}
       className="absolute z-50 shadow-lg"
-      style={{ 
-        left: `${position.x}px`, 
+      style={{
+        left: `${position.x}px`,
         top: `${position.y}px`,
         width: isCollapsed ? 'auto' : '300px',
         cursor: isDragging ? 'grabbing' : 'grab'
       }}
     >
       <Card className="border border-gray-300 rounded-lg overflow-hidden">
-        <div 
+        <div
           className="bg-gray-100 p-2 flex justify-between items-center cursor-grab"
           onMouseDown={handleMouseDown}
           onTouchStart={handleTouchStart}
@@ -141,16 +141,16 @@ const MovableCamera: React.FC<MovableCameraProps> = ({
             {isCollapsed ? "+" : "-"}
           </Button>
         </div>
-        
+
         {!isCollapsed && (
           <CardContent className="p-2">
             <div className="relative w-full h-full">
               <HandTrackingWebcam
                 onHandGesture={onHandGesture}
-                width={280}
-                height={210}
+              // Use default resolution for logic consistency
+              // width={280} height={210} removed to prevent clipping logic
               />
-              
+
               {/* Confidence indicator */}
               <div className="absolute bottom-2 left-2 right-2 bg-black/50 p-1 rounded-md text-xs text-white">
                 Hand Detection: {Math.round(confidence * 100)}%

@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import {
   Download, Undo, Redo, Image as ImageIcon,
   Trash2, Camera, Upload, Eraser, Brush,
-  MoreHorizontal
+  MoreHorizontal, Signal
 } from 'lucide-react';
 import { useDrawing } from '@/contexts/DrawingContext';
 import {
@@ -23,6 +23,7 @@ interface DrawingToolsProps {
   onBackgroundUpload: (file: File) => void;
   canUndo: boolean;
   canRedo: boolean;
+  confidence?: number;
 }
 
 const DrawingTools: React.FC<DrawingToolsProps> = ({
@@ -31,7 +32,8 @@ const DrawingTools: React.FC<DrawingToolsProps> = ({
   onRedo,
   onBackgroundUpload,
   canUndo,
-  canRedo
+  canRedo,
+  confidence = 0
 }) => {
   const {
     brushColor,
@@ -78,6 +80,14 @@ const DrawingTools: React.FC<DrawingToolsProps> = ({
 
   return (
     <div className="bg-white/90 backdrop-blur-md shadow-glass rounded-full px-4 py-2 flex items-center justify-between gap-4 border border-white/40">
+
+      {/* 0. Status Signal */}
+      <div className="flex items-center pr-4 border-r border-gray-200" title={`Detection Confidence: ${Math.round(confidence * 100)}%`}>
+        <div className={`flex items-center gap-1.5 ${confidence > 0.7 ? 'text-green-600' : confidence > 0.3 ? 'text-amber-500' : 'text-red-500'}`}>
+          <Signal className="w-5 h-5" />
+          <span className="text-[10px] font-bold tabular-nums hidden sm:inline">{Math.round(confidence * 100)}%</span>
+        </div>
+      </div>
 
       {/* 1. Tools Group */}
       <div className="flex items-center gap-1 border-r border-gray-200 pr-4">

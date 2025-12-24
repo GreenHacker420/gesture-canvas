@@ -7,7 +7,6 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { DrawingProvider } from '@/contexts/DrawingContext';
 import CameraPanel from '@/components/CameraPanel';
 import CanvasPanel from '@/components/CanvasPanel';
-import StatusCard from '@/components/StatusCard';
 import GestureHandler from '@/components/GestureHandler';
 import MovableCamera from '@/components/MovableCamera';
 import FeedbackForm from '@/components/FeedbackForm';
@@ -190,17 +189,13 @@ const Index = () => {
           </AnimatePresence>
 
           {!isFullscreen && (
-            <div className="mt-8">
-              <StatusCard />
-
-              <div className="text-center mt-12 mb-8">
-                <p className="text-xs text-muted-foreground uppercase tracking-widest opacity-50 font-semibold">
-                  Powered by TensorFlow.js • Handpose Model
-                </p>
-                <p className="text-[10px] text-muted-foreground mt-2 opacity-40">
-                  Your data stays private. All processing happens locally in your browser.
-                </p>
-              </div>
+            <div className="mt-8 text-center mb-8">
+              <p className="text-xs text-muted-foreground uppercase tracking-widest opacity-50 font-semibold">
+                Powered by TensorFlow.js • Handpose Model
+              </p>
+              <p className="text-[10px] text-muted-foreground mt-2 opacity-40">
+                Your data stays private. All processing happens locally in your browser.
+              </p>
             </div>
           )}
         </div>

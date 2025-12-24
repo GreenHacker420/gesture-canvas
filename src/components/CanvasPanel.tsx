@@ -12,13 +12,15 @@ interface CanvasPanelProps {
   additionalDrawingPositions?: { x: number, y: number }[];
   onFullscreenToggle?: (isFullscreen: boolean) => void;
   isFullscreen?: boolean;
+  confidence?: number;
 }
 
 const CanvasPanel: React.FC<CanvasPanelProps> = ({
   onSwapPanels,
   additionalDrawingPositions = [],
   onFullscreenToggle,
-  isFullscreen = false
+  isFullscreen = false,
+  confidence = 0
 }) => {
   const {
     drawingPosition,
@@ -160,6 +162,7 @@ const CanvasPanel: React.FC<CanvasPanelProps> = ({
             onBackgroundUpload={handleBackgroundUpload}
             canUndo={canUndo}
             canRedo={canRedo}
+            confidence={confidence}
           />
         </div>
       </div>

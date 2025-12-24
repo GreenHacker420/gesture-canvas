@@ -201,7 +201,7 @@ const MultiHandDrawingCanvas: React.FC<MultiHandDrawingCanvasProps> = ({
     if (isDrawing && drawingPosition) {
       // Validate coordinates before using them
       if (typeof drawingPosition.x !== 'number' || isNaN(drawingPosition.x) ||
-          typeof drawingPosition.y !== 'number' || isNaN(drawingPosition.y)) {
+        typeof drawingPosition.y !== 'number' || isNaN(drawingPosition.y)) {
         console.warn(`Invalid drawing position detected: x=${drawingPosition.x}, y=${drawingPosition.y}`);
       } else {
         // Debug logging removed
@@ -286,7 +286,7 @@ const MultiHandDrawingCanvas: React.FC<MultiHandDrawingCanvasProps> = ({
       additionalDrawingPositions.forEach((pos, index) => {
         // Validate coordinates before using them
         if (pos && typeof pos.x === 'number' && !isNaN(pos.x) &&
-                  typeof pos.y === 'number' && !isNaN(pos.y)) {
+          typeof pos.y === 'number' && !isNaN(pos.y)) {
           isAnyHandDrawing = true;
           const handId = `hand_${index}`;
 
@@ -612,43 +612,34 @@ const MultiHandDrawingCanvas: React.FC<MultiHandDrawingCanvasProps> = ({
           onTouchEnd={handleTouchEnd}
         />
 
-      {/* Floating brush preview */}
-      {showPreview && cursorPosition && (
-        <>
-          {/* Brush preview */}
+        {/* Floating brush preview */}
+        {showPreview && cursorPosition && (
           <div
-            className="absolute pointer-events-none"
+            className="absolute pointer-events-none transition-all duration-200 ease-out"
             style={{
               left: `${cursorPosition.x}px`,
               top: `${cursorPosition.y}px`,
-              width: `${brushSize * 2}px`,
-              height: `${brushSize * 2}px`,
-              backgroundColor: isEraser ? 'rgba(255, 255, 255, 0.5)' : brushColor,
-              border: '1px solid rgba(0,0,0,0.3)',
+              width: `${brushSize * (isDrawingActive || isMouseDrawing ? 1 : 1.5)}px`, // Slightly larger when hovering
+              height: `${brushSize * (isDrawingActive || isMouseDrawing ? 1 : 1.5)}px`,
+              backgroundColor: (isDrawingActive || isMouseDrawing)
+                ? (isEraser ? 'rgba(255, 255, 255, 0.9)' : brushColor)
+                : 'transparent',
+              border: `2px solid ${isEraser ? 'rgba(0,0,0,0.2)' : brushColor}`,
+              opacity: (isDrawingActive || isMouseDrawing) ? 1 : 0.6,
               borderRadius: '50%',
-              transform: 'translate(-50%, -50%)',
-              zIndex: 10,
-              boxShadow: '0 0 5px rgba(0,0,0,0.3)'
+              transform: `translate(-50%, -50%) scale(${(isDrawingActive || isMouseDrawing) ? 1 : 0.8})`,
+              zIndex: 50,
+              boxShadow: (isDrawingActive || isMouseDrawing)
+                ? '0 2px 10px rgba(0,0,0,0.2)'
+                : 'none'
             }}
-          />
-
-          {/* Drawing mode indicator */}
-          {!isDrawing && !isMouseDrawing && (
-            <div
-              className="absolute pointer-events-none bg-red-500 text-white px-2 py-1 rounded text-xs font-bold"
-              style={{
-                left: `${cursorPosition.x}px`,
-                top: `${cursorPosition.y - 30}px`,
-                transform: 'translate(-50%, -50%)',
-                zIndex: 11,
-                whiteSpace: 'nowrap'
-              }}
-            >
-              Not in drawing mode
-            </div>
-          )}
-        </>
-      )}
+          >
+            {/* Inner dot for precision when hovering */}
+            {!(isDrawingActive || isMouseDrawing) && (
+              <div className="absolute top-1/2 left-1/2 w-1 h-1 bg-current rounded-full transform -translate-x-1/2 -translate-y-1/2 opacity-50" />
+            )}
+          </div>
+        )}
       </div>
     </div>
   );

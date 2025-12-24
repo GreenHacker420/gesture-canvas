@@ -4,6 +4,7 @@ import { HandLandmarkRenderer } from './HandLandmarkRenderer';
 import { HandDetection } from '@/utils/handTracking';
 import { useApp } from '@/contexts/AppContext';
 import { useDrawing } from '@/contexts/DrawingContext';
+import { PointSmoother } from '@/utils/smoothing';
 
 interface HandTrackingWebcamProps {
   onHandGesture: (
@@ -38,7 +39,7 @@ export const HandTrackingWebcam: React.FC<HandTrackingWebcamProps> = ({
     const initializeCamera = async () => {
       try {
         // Request a specific aspect ratio (16:9) to maintain consistency
-        const aspectRatio = 16/9;
+        const aspectRatio = 16 / 9;
         const targetWidth = 640;
         const targetHeight = Math.round(targetWidth / aspectRatio);
 
@@ -97,6 +98,22 @@ export const HandTrackingWebcam: React.FC<HandTrackingWebcamProps> = ({
   // Get drawing context functions
   const { setIsEraser } = useDrawing();
 
+  // Initialize smoothers ref
+  // We use a map to support multiple hands, though primarily we focus on the first one
+  const smoothersRef = useRef<Map<string, PointSmoother>>(new Map());
+
+  // Debounce state for drawing
+  const drawingStabilityCounter = useRef<number>(0);
+  const STABILITY_THRESHOLD = 2; // Need 2 consecutive frames to switch state ideally, but we'll use a counter
+  const MAX_STABILITY = 5;
+
+  // Cleanup smoothers on unmount
+  useEffect(() => {
+    return () => {
+      smoothersRef.current.clear();
+    };
+  }, []);
+
   // Handle hand detection
   const handleHandDetection = (detection: HandDetection) => {
     setDetection(detection);
@@ -115,37 +132,39 @@ export const HandTrackingWebcam: React.FC<HandTrackingWebcamProps> = ({
       let drawingPositions: { x: number, y: number, isDrawing?: boolean }[] = [];
 
       // Process all hands to collect drawing positions
-      detection.hands.forEach(hand => {
+      detection.hands.forEach((hand, index) => {
         if (!hand.isDetected) return;
 
-        // Debug logging for finger positions and gestures
-        console.log(`Hand ${hand.handedness}: Drawing=${hand.gesture.isDrawing}, Position=${hand.indexFingerPosition ? 'Valid' : 'Invalid'}`);
+        // Get or create smoother for this hand index
+        const handId = `hand-${index}`; // Simple ID based on index for now
+        if (!smoothersRef.current.has(handId)) {
+          smoothersRef.current.set(handId, new PointSmoother(0.5));
+        }
+        const smoother = smoothersRef.current.get(handId)!;
 
         // If hand has a valid index finger position, consider it for drawing
-        // We'll check the drawing gesture later, but we need the position regardless
         if (hand.indexFingerPosition) {
           // Validate coordinates before using them
           const { x, y } = hand.indexFingerPosition;
 
           // Check if coordinates are valid numbers
           if (typeof x === 'number' && !isNaN(x) &&
-              typeof y === 'number' && !isNaN(y)) {
+            typeof y === 'number' && !isNaN(y)) {
 
             // Mirror the x-coordinate for natural drawing and ensure values are within bounds
-            const correctedPosition = {
-              x: Math.min(width, Math.max(0, width - x)),
-              y: Math.min(height, Math.max(0, y))
-            };
+            // Note: Mirroring matches the visual feed
+            const rawX = Math.min(width, Math.max(0, width - x));
+            const rawY = Math.min(height, Math.max(0, y));
+
+            // Apply smoothing
+            const smoothed = smoother.smooth({ x: rawX, y: rawY });
 
             // Add the position to our list, along with the drawing state
             drawingPositions.push({
-              ...correctedPosition,
+              x: smoothed.x,
+              y: smoothed.y,
               isDrawing: hand.gesture.isDrawing
             });
-
-            console.log(`Added hand position: x=${correctedPosition.x}, y=${correctedPosition.y}, isDrawing=${hand.gesture.isDrawing}`);
-          } else {
-            console.warn(`Invalid hand position detected: x=${x}, y=${y}`);
           }
         }
       });
@@ -158,39 +177,42 @@ export const HandTrackingWebcam: React.FC<HandTrackingWebcamProps> = ({
 
       // Determine primary drawing position (prefer right hand if available)
       let primaryDrawingPosition = null;
-      let primaryIsDrawing = false;
+      let rawIsDrawing = false;
 
       // Find drawing positions that are actually in drawing mode
       const activeDrawingPositions = drawingPositions.filter(pos => pos.isDrawing);
 
-      // If we have any positions with drawing mode active, use those
+      // Simple logic: if any hand is drawing, we are drawing
       if (activeDrawingPositions.length > 0) {
-        // Prefer right hand if available
-        const rightHandPos = drawingPositions.find(pos =>
-          rightHand && rightHand.indexFingerPosition &&
-          Math.abs(pos.x - (width - rightHand.indexFingerPosition.x)) < 5 &&
-          Math.abs(pos.y - rightHand.indexFingerPosition.y) < 5
-        );
+        // Prefer right hand if available logic...
+        // For simplicity and stability, let's stick to the first active one or right hand one
+        const rightHandPos = rightHand ? drawingPositions.find((pos, idx) => detection.hands[idx].handedness === 'Right' && pos.isDrawing) : null;
 
-        if (rightHandPos && rightHandPos.isDrawing) {
-          // Use right hand as primary
+        if (rightHandPos) {
           primaryDrawingPosition = { x: rightHandPos.x, y: rightHandPos.y };
-          primaryIsDrawing = true;
-          console.log("Using right hand as primary drawing hand");
+          rawIsDrawing = true;
         } else {
-          // Use first active drawing position
           primaryDrawingPosition = { x: activeDrawingPositions[0].x, y: activeDrawingPositions[0].y };
-          primaryIsDrawing = true;
-          console.log("Using active drawing position");
+          rawIsDrawing = true;
         }
       }
-      // If no active drawing positions, still track a hand position for cursor
+      // If no active drawing positions, track cursor
       else if (drawingPositions.length > 0) {
-        // Just use the first position for cursor tracking
+        // Just use the first position for cursor
         primaryDrawingPosition = { x: drawingPositions[0].x, y: drawingPositions[0].y };
-        primaryIsDrawing = false;
-        console.log("Using hand position for cursor only (not drawing)");
+        rawIsDrawing = false;
       }
+
+      // --- Debouncing / Stability Logic for Drawing State ---
+      if (rawIsDrawing) {
+        drawingStabilityCounter.current = Math.min(drawingStabilityCounter.current + 1, MAX_STABILITY);
+      } else {
+        drawingStabilityCounter.current = Math.max(drawingStabilityCounter.current - 1, 0);
+      }
+
+      // We consider "Drawing" to be true if stability > threshold
+      // This prevents flickering if one frame is missed
+      const effectiveIsDrawing = drawingStabilityCounter.current >= STABILITY_THRESHOLD;
 
       // Remove the primary position from additional positions to avoid duplicates
       const secondaryDrawingPositions = activeDrawingPositions
@@ -198,23 +220,13 @@ export const HandTrackingWebcam: React.FC<HandTrackingWebcamProps> = ({
           Math.abs(pos.x - primaryDrawingPosition.x) > 5 ||
           Math.abs(pos.y - primaryDrawingPosition.y) > 5
         )
-        .map(pos => ({ x: pos.x, y: pos.y })); // Convert to simple x,y format
+        .map(pos => ({ x: pos.x, y: pos.y }));
 
-      // Log when multiple hands are drawing
-      if (secondaryDrawingPositions.length > 0) {
-        console.log(`Drawing with multiple hands: Primary hand and ${secondaryDrawingPositions.length} additional hand(s)`);
-      }
+      // Get finger distance
+      let fingerDistance = detection.gesture.fingerDistance || 0;
 
-      // Get finger distance for eraser size adjustment
-      let fingerDistance = 0;
-      if (detection.gesture.fingerDistance) {
-        fingerDistance = detection.gesture.fingerDistance;
-      }
-
-      // Use our calculated primaryIsDrawing instead of the global detection.gesture.isDrawing
-      // This gives us more precise control over when drawing happens
       onHandGesture(
-        primaryIsDrawing,
+        effectiveIsDrawing,
         primaryDrawingPosition,
         detection.gesture.isClearCanvas,
         detection.gesture.isChangeColor,
@@ -224,8 +236,13 @@ export const HandTrackingWebcam: React.FC<HandTrackingWebcamProps> = ({
         detection.gesture.isDualHandDrawing,
         fingerDistance
       );
+
     } else {
       // No hands detected
+      // Reset smoothers
+      smoothersRef.current.clear();
+      drawingStabilityCounter.current = 0; // Reset stability
+
       onHandGesture(false, null, false, false, 0, undefined, false, false, 0);
     }
   };

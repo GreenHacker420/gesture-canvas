@@ -19,6 +19,7 @@ export interface SingleHandDetection {
         isChangeColor: boolean;
         isEraser: boolean;
         isPaused: boolean;
+        isPinching?: boolean;
         isDualHandDrawing: boolean;
         fingerDistance?: number;
         gestureHoldTime?: number;

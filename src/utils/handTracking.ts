@@ -14,6 +14,7 @@ export interface SingleHandDetection {
     isChangeColor: boolean;       // Three fingers extended (index, middle, ring)
     isEraser: boolean;            // Two fingers extended (index and middle)
     isPaused: boolean;            // Closed fist (all fingers closed)
+    isPinching?: boolean;         // Thumb and index touching
     isDualHandDrawing: boolean;   // Both hands with index fingers extended
     fingerDistance?: number;      // Distance between fingers for eraser size
     gestureHoldTime?: number;     // Time the gesture has been held (for clear canvas)
@@ -120,11 +121,11 @@ export const drawHandLandmarks = (
 
   // Draw connections
   const connections = [
-    [0,1],[1,2],[2,3],[3,4], // Thumb
-    [0,5],[5,6],[6,7],[7,8], // Index
-    [0,9],[9,10],[10,11],[11,12], // Middle
-    [0,13],[13,14],[14,15],[15,16], // Ring
-    [0,17],[17,18],[18,19],[19,20] // Pinky
+    [0, 1], [1, 2], [2, 3], [3, 4], // Thumb
+    [0, 5], [5, 6], [6, 7], [7, 8], // Index
+    [0, 9], [9, 10], [10, 11], [11, 12], // Middle
+    [0, 13], [13, 14], [14, 15], [15, 16], // Ring
+    [0, 17], [17, 18], [18, 19], [19, 20] // Pinky
   ];
 
   ctx.strokeStyle = 'blue';
@@ -219,8 +220,8 @@ export const analyzeSingleHand = (
     for (const key in hand) {
       const value = hand[key];
       if (Array.isArray(value) && value.length > 0 &&
-          value[0] && typeof value[0] === 'object' &&
-          (value[0].x !== undefined || value[0].x3D !== undefined)) {
+        value[0] && typeof value[0] === 'object' &&
+        (value[0].x !== undefined || value[0].x3D !== undefined)) {
         rawLandmarks = value;
         console.log(`Found landmarks in hand.${key}`);
         break;
@@ -415,8 +416,8 @@ export const analyzeSingleHand = (
   let indexFingerPosition = null;
 
   if (indexFingerTip &&
-      typeof indexFingerTip.x === 'number' && !isNaN(indexFingerTip.x) &&
-      typeof indexFingerTip.y === 'number' && !isNaN(indexFingerTip.y)) {
+    typeof indexFingerTip.x === 'number' && !isNaN(indexFingerTip.x) &&
+    typeof indexFingerTip.y === 'number' && !isNaN(indexFingerTip.y)) {
     indexFingerPosition = {
       x: indexFingerTip.x,
       y: indexFingerTip.y
@@ -530,8 +531,8 @@ export const analyzeSingleHand = (
   // let fingersClose = false; // Commented out as it's unused
 
   if (indexTip && middleTip &&
-      indexTip.x !== null && indexTip.y !== null &&
-      middleTip.x !== null && middleTip.y !== null) {
+    indexTip.x !== null && indexTip.y !== null &&
+    middleTip.x !== null && middleTip.y !== null) {
     fingerDistance = Math.sqrt(
       Math.pow(indexTip.x - middleTip.x, 2) +
       Math.pow(indexTip.y - middleTip.y, 2)
@@ -549,28 +550,50 @@ export const analyzeSingleHand = (
   // ].filter(Boolean).length; // Commented out as it's unused
 
   // Check for specific finger combinations
+  // Note: We ignore thumb state for some gestures to make them more forgiving
+
   const isThreeFingerExtended = indexFingerExtended && middleFingerExtended && ringFingerExtended &&
-                               !thumbExtended && !pinkyExtended;
+    !pinkyExtended; // Thumb irrelevant
 
   const isTwoFingerExtended = indexFingerExtended && middleFingerExtended &&
-                             !thumbExtended && !ringFingerExtended && !pinkyExtended;
+    !ringFingerExtended && !pinkyExtended; // Thumb irrelevant
 
   const isAllFingersClosed = !thumbExtended && !indexFingerExtended && !middleFingerExtended &&
-                            !ringFingerExtended && !pinkyExtended;
+    !ringFingerExtended && !pinkyExtended;
 
   const isAllFingersExtended = thumbExtended && indexFingerExtended && middleFingerExtended &&
-                              ringFingerExtended && pinkyExtended;
+    ringFingerExtended && pinkyExtended;
 
-  const isOnlyIndexExtended = indexFingerExtended && !thumbExtended && !middleFingerExtended &&
-                             !ringFingerExtended && !pinkyExtended;
+  const isOnlyIndexExtended = indexFingerExtended && !middleFingerExtended &&
+    !ringFingerExtended && !pinkyExtended; // Thumb irrelevant
+
+  // Calculate pinch distance (Thumb tip to Index tip)
+  const thumbTip = landmarks.find((kp: any) => kp.name === 'thumb_tip');
+  let pinchDistance = 1000;
+
+  if (thumbTip && indexTip &&
+    thumbTip.x !== null && thumbTip.y !== null &&
+    indexTip.x !== null && indexTip.y !== null) {
+    pinchDistance = Math.sqrt(
+      Math.pow(thumbTip.x - indexTip.x, 2) +
+      Math.pow(thumbTip.y - indexTip.y, 2)
+    );
+  }
+
+  // Pinch gesture: Thumb and Index close
+  const isPinching = pinchDistance < 40; // Threshold pixels
 
   // Determine gestures based on finger positions
   const gesture = {
-    // Drawing Mode: Index finger extended, other fingers closed
-    isDrawing: isOnlyIndexExtended,
+    // Drawing Mode: Index finger extended OR Pinching
+    // We combine them: pinching is a very stable way to draw
+    isDrawing: isOnlyIndexExtended || isPinching,
+
+    // Explicit pinch state if needed elsewhere
+    isPinching: isPinching,
 
     // Clear Canvas: All fingers extended (open palm)
-    isClearCanvas: isAllFingersExtended,
+    isClearCanvas: isAllFingersExtended && !isPinching, // Avoid accidental clear while pinching
 
     // Color Selection: Three fingers extended (index, middle, ring)
     isChangeColor: isThreeFingerExtended,
@@ -719,8 +742,8 @@ export const detectHand = async (
 
     // Find the primary hand (right hand if available, otherwise left)
     const primaryHand = validHands.find(h => h.handedness === 'Right') ||
-                       validHands.find(h => h.handedness === 'Left') ||
-                       validHands[0];
+      validHands.find(h => h.handedness === 'Left') ||
+      validHands[0];
 
     if (!primaryHand) {
       return defaultDetection;
@@ -736,9 +759,9 @@ export const detectHand = async (
 
     // Check for dual-hand drawing (both hands with index fingers extended)
     const isDualHandDrawing = validHands.length >= 2 &&
-                             validHands.filter(hand =>
-                               hand.gesture.isDrawing && hand.indexFingerPosition !== null
-                             ).length >= 2;
+      validHands.filter(hand =>
+        hand.gesture.isDrawing && hand.indexFingerPosition !== null
+      ).length >= 2;
 
     // Create a combined gesture state that considers all hands
     const combinedGesture = {

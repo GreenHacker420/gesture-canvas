@@ -7,6 +7,7 @@ interface CanvasPanelProps {
     }[];
     onFullscreenToggle?: (isFullscreen: boolean) => void;
     isFullscreen?: boolean;
+    confidence?: number;
 }
 declare const CanvasPanel: React.FC<CanvasPanelProps>;
 export default CanvasPanel;
