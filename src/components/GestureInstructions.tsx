@@ -1,79 +1,68 @@
-
 import React from 'react';
-import { Card, CardContent } from "@/components/ui/card";
+import { motion } from 'framer-motion';
+
+const instructions = [
+  {
+    icon: "☝️",
+    title: "Draw",
+    desc: "Index finger only",
+    color: "bg-blue-50 text-blue-600 border-blue-100"
+  },
+  {
+    icon: "✌️",
+    title: "Eraser",
+    desc: "Two fingers extended",
+    color: "bg-purple-50 text-purple-600 border-purple-100"
+  },
+  {
+    icon: "🖖",
+    title: "Color",
+    desc: "Three fingers",
+    color: "bg-green-50 text-green-600 border-green-100"
+  },
+  {
+    icon: "🖐️",
+    title: "Clear",
+    desc: "Open hand (hold)",
+    color: "bg-amber-50 text-amber-600 border-amber-100"
+  },
+  {
+    icon: "✊",
+    title: "Pause",
+    desc: "Closed fist",
+    color: "bg-red-50 text-red-600 border-red-100"
+  }
+];
 
 const GestureInstructions: React.FC = () => {
   return (
-    <Card className="mb-6 bg-gradient-to-r from-indigo-50 to-purple-50">
-      <CardContent className="p-4">
-        <h3 className="font-bold text-lg mb-2">Gesture Controls</h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {/* Drawing Mode */}
-          <div className="flex items-center gap-2">
-            <div className="bg-blue-100 rounded-full p-2 flex-shrink-0">
-              <span className="font-bold">☝️</span>
-            </div>
-            <span className="text-sm">
-              <b>Index finger only:</b> Drawing mode
-            </span>
-          </div>
+    <div className="w-full">
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+        {instructions.map((item, index) => (
+          <motion.div
+            key={item.title}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: index * 0.1 }}
+            whileHover={{ y: -5, scale: 1.02 }}
+            className={`
+              relative overflow-hidden rounded-xl border p-4
+              flex flex-col items-center text-center cursor-help
+              transition-shadow hover:shadow-soft-md bg-white
+              ${item.color}
+            `}
+          >
+            <div className="text-2xl mb-2 filter drop-shadow-sm">{item.icon}</div>
+            <h3 className="font-bold text-sm mb-1">{item.title}</h3>
+            <p className="text-[10px] uppercase tracking-wide font-semibold opacity-80">{item.desc}</p>
+          </motion.div>
+        ))}
+      </div>
 
-          {/* Color Selection */}
-          <div className="flex items-center gap-2">
-            <div className="bg-green-100 rounded-full p-2 flex-shrink-0">
-              <span className="font-bold">🖖</span>
-            </div>
-            <span className="text-sm">
-              <b>Three fingers extended:</b> Color selection
-            </span>
-          </div>
-
-          {/* Stop Drawing */}
-          <div className="flex items-center gap-2">
-            <div className="bg-red-100 rounded-full p-2 flex-shrink-0">
-              <span className="font-bold">✊</span>
-            </div>
-            <span className="text-sm">
-              <b>Closed fist:</b> Pause drawing
-            </span>
-          </div>
-
-          {/* Clear Canvas */}
-          <div className="flex items-center gap-2">
-            <div className="bg-yellow-100 rounded-full p-2 flex-shrink-0">
-              <span className="font-bold">🖐️</span>
-            </div>
-            <span className="text-sm">
-              <b>All fingers extended:</b> Hold for 1-2s to clear canvas
-            </span>
-          </div>
-
-          {/* Eraser Mode */}
-          <div className="flex items-center gap-2">
-            <div className="bg-purple-100 rounded-full p-2 flex-shrink-0">
-              <span className="font-bold">✌️</span>
-            </div>
-            <span className="text-sm">
-              <b>Two fingers extended:</b> Eraser mode (adjust size by changing finger distance)
-            </span>
-          </div>
-
-          {/* Dual-Hand Drawing */}
-          <div className="flex items-center gap-2">
-            <div className="bg-indigo-100 rounded-full p-2 flex-shrink-0">
-              <span className="font-bold">👆👆</span>
-            </div>
-            <span className="text-sm">
-              <b>Both hands with index fingers:</b> Draw with both hands simultaneously
-            </span>
-          </div>
-        </div>
-
-        <div className="mt-4 text-xs text-gray-500 italic">
-          Note: For best results, ensure your hands are clearly visible in the camera view and well-lit.
-        </div>
-      </CardContent>
-    </Card>
+      <p className="text-center text-xs text-muted-foreground mt-4 opacity-60">
+        Tip: Ensure your hand is well-lit and clearly visible to the camera
+      </p>
+    </div>
   );
 };
 

@@ -1,6 +1,4 @@
-
 import * as React from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useDrawing } from '@/contexts/DrawingContext';
 import DrawingTools from './DrawingTools';
 import MultiHandDrawingCanvas from './MultiHandDrawingCanvas';
@@ -107,63 +105,65 @@ const CanvasPanel: React.FC<CanvasPanelProps> = ({
   };
 
   return (
-    <Card className={`rounded-none border-0 h-full flex flex-col ${isFullscreen ? 'fixed inset-0 z-40 bg-white' : ''}`}>
-      <CardHeader className="pb-2 flex flex-row justify-between items-center">
-        <CardTitle>Drawing Canvas</CardTitle>
-        <div className="flex items-center gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleFullscreenToggle}
-            className="flex items-center gap-1 text-xs px-2 py-1 h-auto"
-            title={isFullscreen ? "Exit Full Screen" : "Full Screen"}
-          >
-            {isFullscreen ? (
-              <><Minimize className="h-3 w-3" /><span className="hidden sm:inline">Exit</span></>
-            ) : (
-              <><Maximize className="h-3 w-3" /><span className="hidden sm:inline">Full Screen</span></>
-            )}
-          </Button>
+    <div className={`relative w-full h-full flex flex-col ${isFullscreen ? 'fixed inset-0 z-50 bg-white' : 'bg-transparent'}`}>
 
-          {onSwapPanels && !isFullscreen && (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={onSwapPanels}
-              className="flex items-center gap-1 text-xs px-2 py-1 h-auto"
-            >
-              <ArrowLeftRight className="h-3 w-3" />
-              <span className="hidden sm:inline">Swap</span>
-            </Button>
-          )}
-        </div>
-      </CardHeader>
-      <CardContent className="flex-1 flex flex-col gap-4 p-2 sm:p-6">
-        <div className="flex-1 relative bg-gray-50 rounded-lg overflow-hidden">
-          <MultiHandDrawingCanvas
-            isDrawing={!!drawingPosition}
-            drawingPosition={drawingPosition}
-            clearCanvas={clearCanvas}
-            onCanvasCleared={() => setClearCanvas(false)}
-            brushColor={brushColor}
-            brushSize={brushSize}
-            additionalDrawingPositions={additionalDrawingPositions}
-            isEraser={isEraser}
-            isFullscreen={isFullscreen}
-            backgroundImage={backgroundImage}
-            backgroundOpacity={backgroundOpacity}
+      {/* Header Controls - Overlay on Canvas or Top Bar */}
+      <div className="absolute top-4 right-4 z-20 flex gap-2">
+        <Button
+          variant="secondary"
+          size="sm"
+          onClick={handleFullscreenToggle}
+          className="shadow-soft-sm hover:shadow-soft-md rounded-full bg-white/90 backdrop-blur-sm border border-white/20"
+        >
+          {isFullscreen ? <Minimize className="h-4 w-4" /> : <Maximize className="h-4 w-4" />}
+          <span className="sr-only">{isFullscreen ? "Exit Full Screen" : "Full Screen"}</span>
+        </Button>
+
+        {onSwapPanels && !isFullscreen && (
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={onSwapPanels}
+            className="shadow-soft-sm hover:shadow-soft-md rounded-full bg-white/90 backdrop-blur-sm border border-white/20"
+          >
+            <ArrowLeftRight className="h-4 w-4" />
+            <span className="sr-only">Swap</span>
+          </Button>
+        )}
+      </div>
+
+      {/* Main Canvas Area */}
+      <div className="flex-1 relative overflow-hidden bg-white/50 rounded-2xl">
+        {/* Background Grid Pattern is applied on the parent container in Index.tsx, 
+             but we can add a specific white layer here if needed */}
+
+        <MultiHandDrawingCanvas
+          isDrawing={!!drawingPosition}
+          drawingPosition={drawingPosition}
+          clearCanvas={clearCanvas}
+          onCanvasCleared={() => setClearCanvas(false)}
+          brushColor={brushColor}
+          brushSize={brushSize}
+          additionalDrawingPositions={additionalDrawingPositions}
+          isEraser={isEraser}
+          isFullscreen={isFullscreen}
+          backgroundImage={backgroundImage}
+          backgroundOpacity={backgroundOpacity}
+        />
+
+        {/* Floating Tools at the bottom */}
+        <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 z-10 w-[95%] max-w-3xl">
+          <DrawingTools
+            onDownload={handleCanvasDownload}
+            onUndo={undo}
+            onRedo={redo}
+            onBackgroundUpload={handleBackgroundUpload}
+            canUndo={canUndo}
+            canRedo={canRedo}
           />
         </div>
-        <DrawingTools
-          onDownload={handleCanvasDownload}
-          onUndo={undo}
-          onRedo={redo}
-          onBackgroundUpload={handleBackgroundUpload}
-          canUndo={canUndo}
-          canRedo={canRedo}
-        />
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 };
 

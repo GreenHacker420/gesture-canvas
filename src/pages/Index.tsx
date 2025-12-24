@@ -1,233 +1,207 @@
 
 import * as React from 'react';
-import GestureInstructions from '@/components/GestureInstructions';
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from "@/components/ui/resizable";
+import { ArrowLeftRight } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+
+import { DrawingProvider } from '@/contexts/DrawingContext';
 import CameraPanel from '@/components/CameraPanel';
 import CanvasPanel from '@/components/CanvasPanel';
 import StatusCard from '@/components/StatusCard';
-import { DrawingProvider } from '@/contexts/DrawingContext';
 import GestureHandler from '@/components/GestureHandler';
-import { Button } from '@/components/ui/button';
-import { ArrowLeftRight } from 'lucide-react';
 import MovableCamera from '@/components/MovableCamera';
 import FeedbackForm from '@/components/FeedbackForm';
+import GestureInstructions from '@/components/GestureInstructions';
+import AppHeader from '@/components/layout/AppHeader';
+import { Button } from '@/components/ui/button';
 
 const Index = () => {
   const [isCameraLeft, setIsCameraLeft] = React.useState(true);
   const [confidence] = React.useState(0);
-  // State for fullscreen mode
   const [isFullscreen, setIsFullscreen] = React.useState(false);
-  // State for additional drawing positions (for multi-hand support)
   const [additionalDrawingPositions, setAdditionalDrawingPositions] = React.useState<{ x: number, y: number }[]>([]);
 
-  const handleSwapPanels = () => {
-    setIsCameraLeft(!isCameraLeft);
-  };
+  const handleSwapPanels = () => setIsCameraLeft(!isCameraLeft);
 
-  // Function to update confidence and additional positions
-  // This is used indirectly through the GestureHandler component
+  // This effect handles updating additional drawing positions when needed
+  // It's preserved from the original logic, though currently static
   React.useEffect(() => {
-    // This effect handles updating additional drawing positions when needed
     const updatePositionsFromGesture = (positions: { x: number, y: number }[]) => {
-      if (positions && positions.length > 0) {
+      if (positions?.length > 0) {
         setAdditionalDrawingPositions(positions);
       } else {
         setAdditionalDrawingPositions([]);
       }
     };
-
-    // This is just to prevent the unused function warning
-    // In a real app, we would use this more directly
     if (false) updatePositionsFromGesture([]);
   }, []);
 
   return (
     <DrawingProvider>
-      <div className="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100 py-8 px-4">
-        <div className="container max-w-6xl">
+      <div className="min-h-screen bg-background subtle-grid overflow-x-hidden selection:bg-brush-blue/20">
+        <div className="container max-w-7xl mx-auto py-6 px-4 md:px-6">
+
+          <AnimatePresence>
+            {!isFullscreen && (
+              <motion.div
+                initial={{ opacity: 0, y: -20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                className="mb-8"
+              >
+                <AppHeader />
+
+                <div className="max-w-3xl mx-auto text-center mb-10">
+                  <p className="text-lg text-muted-foreground leading-relaxed">
+                    Draw with just your hand! Use gestures to change colors, clear the canvas, and create art without touching your screen.
+                  </p>
+                </div>
+
+                <div className="mb-10">
+                  <GestureInstructions />
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          {/* Mobile Swap Control */}
           {!isFullscreen && (
-            <div className="text-center mb-8">
-              <div className="flex justify-between items-center mb-4">
-                <div className="flex-1">
-                  {/* Empty div for spacing */}
-                </div>
-                <div className="flex-1">
-                  <h1 className="text-4xl font-bold mb-2 bg-clip-text text-transparent bg-gradient-to-r from-brush-blue to-brush-purple">
-                    Gesture Canvas
-                  </h1>
-                </div>
-                <div className="flex-1 flex justify-end">
-                  <FeedbackForm />
-                </div>
-              </div>
-
-              <p className="text-gray-600 max-w-2xl mx-auto mb-8">
-                Draw with just your hand! Use gestures to change colors, clear the canvas, and create art without touching your screen.
-              </p>
-
-              <GestureInstructions />
-            </div>
-          )}
-
-          {/* Mobile Layout Toggle - only show when not in fullscreen */}
-          {!isFullscreen && (
-            <div className="md:hidden flex justify-center mb-4">
+            <div className="md:hidden flex justify-center mb-6">
               <Button
                 variant="outline"
                 size="sm"
                 onClick={handleSwapPanels}
-                className="flex items-center gap-2"
+                className="rounded-full shadow-soft-sm hover:shadow-soft-md transition-all bg-surface-50"
               >
-                <ArrowLeftRight className="h-4 w-4" />
-                Swap Camera & Canvas
+                <ArrowLeftRight className="h-4 w-4 mr-2" />
+                Swap View
               </Button>
             </div>
           )}
 
-          {/* Desktop Layout */}
+          {/* Main Desktop Layout */}
           {!isFullscreen && (
-            <div className="hidden md:block">
-              <ResizablePanelGroup
-                direction="horizontal"
-                className="min-h-[600px] rounded-lg border"
-              >
+            <motion.div
+              layout
+              className="hidden md:block rounded-2xl overflow-hidden border border-white/20 shadow-soft-lg glass-panel-light h-[700px]"
+            >
+              <ResizablePanelGroup direction="horizontal">
                 {isCameraLeft ? (
                   <>
-                    <ResizablePanel defaultSize={50}>
-                      <GestureHandler>
-                        {(handGestureProps) => (
-                          <CameraPanel
-                            onHandGesture={handGestureProps.onHandGesture}
-                            confidence={confidence}
-                          />
-                        )}
-                      </GestureHandler>
+                    <ResizablePanel defaultSize={40} minSize={30}>
+                      <div className="h-full p-4 bg-surface-50/50">
+                        <GestureHandler>
+                          {({ onHandGesture }) => (
+                            <CameraPanel onHandGesture={onHandGesture} confidence={confidence} />
+                          )}
+                        </GestureHandler>
+                      </div>
                     </ResizablePanel>
-                    <ResizableHandle withHandle />
-                    <ResizablePanel defaultSize={50}>
-                      <CanvasPanel
-                        onSwapPanels={handleSwapPanels}
-                        additionalDrawingPositions={additionalDrawingPositions}
-                        onFullscreenToggle={setIsFullscreen}
-                        isFullscreen={isFullscreen}
-                      />
+                    <ResizableHandle withHandle className="bg-border/50 hover:bg-brush-blue/50 transition-colors" />
+                    <ResizablePanel defaultSize={60}>
+                      <div className="h-full bg-white relative">
+                        <CanvasPanel
+                          onSwapPanels={handleSwapPanels}
+                          additionalDrawingPositions={additionalDrawingPositions}
+                          onFullscreenToggle={setIsFullscreen}
+                          isFullscreen={isFullscreen}
+                        />
+                      </div>
                     </ResizablePanel>
                   </>
                 ) : (
                   <>
-                    <ResizablePanel defaultSize={50}>
-                      <CanvasPanel
-                        onSwapPanels={handleSwapPanels}
-                        additionalDrawingPositions={additionalDrawingPositions}
-                        onFullscreenToggle={setIsFullscreen}
-                        isFullscreen={isFullscreen}
-                      />
+                    <ResizablePanel defaultSize={60}>
+                      <div className="h-full bg-white relative">
+                        <CanvasPanel
+                          onSwapPanels={handleSwapPanels}
+                          additionalDrawingPositions={additionalDrawingPositions}
+                          onFullscreenToggle={setIsFullscreen}
+                          isFullscreen={isFullscreen}
+                        />
+                      </div>
                     </ResizablePanel>
-                    <ResizableHandle withHandle />
-                    <ResizablePanel defaultSize={50}>
-                      <GestureHandler>
-                        {(handGestureProps) => (
-                          <CameraPanel
-                            onHandGesture={handGestureProps.onHandGesture}
-                            confidence={confidence}
-                          />
-                        )}
-                      </GestureHandler>
+                    <ResizableHandle withHandle className="bg-border/50 hover:bg-brush-blue/50 transition-colors" />
+                    <ResizablePanel defaultSize={40} minSize={30}>
+                      <div className="h-full p-4 bg-surface-50/50">
+                        <GestureHandler>
+                          {({ onHandGesture }) => (
+                            <CameraPanel onHandGesture={onHandGesture} confidence={confidence} />
+                          )}
+                        </GestureHandler>
+                      </div>
                     </ResizablePanel>
                   </>
                 )}
               </ResizablePanelGroup>
-            </div>
+            </motion.div>
           )}
 
-          {/* Mobile Layout - only show when not in fullscreen */}
+          {/* Mobile Layout Column */}
           {!isFullscreen && (
-            <div className="md:hidden space-y-4">
-              {isCameraLeft ? (
-                <>
-                  <GestureHandler>
-                    {(handGestureProps) => (
-                      <CameraPanel
-                        onHandGesture={handGestureProps.onHandGesture}
-                        confidence={confidence}
-                      />
-                    )}
-                  </GestureHandler>
-                  <CanvasPanel
-                    onSwapPanels={handleSwapPanels}
-                    additionalDrawingPositions={additionalDrawingPositions}
-                    onFullscreenToggle={setIsFullscreen}
-                    isFullscreen={isFullscreen}
-                  />
-                </>
-              ) : (
-                <>
-                  <CanvasPanel
-                    onSwapPanels={handleSwapPanels}
-                    additionalDrawingPositions={additionalDrawingPositions}
-                    onFullscreenToggle={setIsFullscreen}
-                    isFullscreen={isFullscreen}
-                  />
-                  <GestureHandler>
-                    {(handGestureProps) => (
-                      <CameraPanel
-                        onHandGesture={handGestureProps.onHandGesture}
-                        confidence={confidence}
-                      />
-                    )}
-                  </GestureHandler>
-                </>
-              )}
-            </div>
-          )}
-
-          {/* Fullscreen Canvas with Movable Camera */}
-          {isFullscreen && (
-            <div className="fixed inset-0 z-40">
-              <CanvasPanel
-                onFullscreenToggle={setIsFullscreen}
-                isFullscreen={isFullscreen}
-                additionalDrawingPositions={additionalDrawingPositions}
-              />
-
-              <GestureHandler>
-                {(handGestureProps) => (
-                  <MovableCamera
-                    onHandGesture={handGestureProps.onHandGesture}
-                    confidence={confidence}
-                  />
-                )}
-              </GestureHandler>
-
-              {/* Feedback button in fullscreen mode */}
-              <div className="absolute top-4 right-20 z-50">
-                <FeedbackForm />
+            <div className="md:hidden space-y-6">
+              <div className="rounded-xl overflow-hidden shadow-soft-md border border-border/50 bg-white">
+                <GestureHandler>
+                  {({ onHandGesture }) => (
+                    <CameraPanel onHandGesture={onHandGesture} confidence={confidence} />
+                  )}
+                </GestureHandler>
+              </div>
+              <div className="rounded-xl overflow-hidden shadow-soft-md border border-border/50 bg-white h-[500px]">
+                <CanvasPanel
+                  onSwapPanels={handleSwapPanels}
+                  additionalDrawingPositions={additionalDrawingPositions}
+                  onFullscreenToggle={setIsFullscreen}
+                  isFullscreen={isFullscreen}
+                />
               </div>
             </div>
           )}
 
-          {!isFullscreen && <StatusCard />}
+          {/* Fullscreen Mode */}
+          <AnimatePresence>
+            {isFullscreen && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="fixed inset-0 z-50 bg-white"
+              >
+                <CanvasPanel
+                  onFullscreenToggle={setIsFullscreen}
+                  isFullscreen={isFullscreen}
+                  additionalDrawingPositions={additionalDrawingPositions}
+                />
+
+                <div className="absolute top-4 right-4 z-[60]">
+                  <FeedbackForm />
+                </div>
+
+                <GestureHandler>
+                  {({ onHandGesture }) => (
+                    <MovableCamera
+                      onHandGesture={onHandGesture}
+                      confidence={confidence}
+                    />
+                  )}
+                </GestureHandler>
+              </motion.div>
+            )}
+          </AnimatePresence>
 
           {!isFullscreen && (
-            <>
-              <p className="text-center text-sm text-gray-500 mt-8">
-                Make sure to allow camera access for hand tracking functionality.
-                <br />
-                Move your hand closer to the camera for better tracking results.
-                <br />
-                If hand tracking is unavailable, you can still draw with mouse or touch.
-              </p>
+            <div className="mt-8">
+              <StatusCard />
 
-              <div className="text-center text-xs text-amber-600 bg-amber-50 border border-amber-200 rounded-md p-3 mt-4 max-w-2xl mx-auto">
-                <strong>Privacy Notice:</strong> This application uses your device's camera for hand tracking.
-                All processing happens directly in your browser - no video data is sent to any server or stored.
-                Your camera feed is only used for real-time hand gesture detection to control the drawing canvas.
+              <div className="text-center mt-12 mb-8">
+                <p className="text-xs text-muted-foreground uppercase tracking-widest opacity-50 font-semibold">
+                  Powered by TensorFlow.js • Handpose Model
+                </p>
+                <p className="text-[10px] text-muted-foreground mt-2 opacity-40">
+                  Your data stays private. All processing happens locally in your browser.
+                </p>
               </div>
-
-              <p className="text-center text-xs text-gray-400 mt-4">
-                Created by GreenHacker
-              </p>
-            </>
+            </div>
           )}
         </div>
       </div>
